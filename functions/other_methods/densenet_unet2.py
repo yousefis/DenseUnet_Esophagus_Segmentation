@@ -1,0 +1,345 @@
+import tensorflow as tf
+import SimpleITK as sitk
+# import math as math
+import numpy as np
+import os
+from os import listdir
+from os.path import isfile, join
+from random import shuffle
+import matplotlib.pyplot as plt
+
+
+# !!
+
+class _densenet_unet:
+    def __init__(self, densnet_unet_config,compression_coefficient, growth_rate, class_no=2):
+        print('create object _densenet_unet')
+        self.compres_coef = compression_coefficient
+        self.class_no = class_no
+        self.growth_rate = growth_rate
+        self.kernel_size1 = 1
+        self.kernel_size2 = 3
+        self.config=densnet_unet_config
+
+    def transition_layer(self, dense_out1, transition_name, conv_name,conv_pool_name, kernel_size=[1, 1],
+                         padding='same', activation=None, dilation_rate=(1, 1), pool_size=[2, 2], strides=2):
+        with tf.name_scope(transition_name):
+            filter = int(dense_out1.get_shape()[3].value * self.compres_coef)
+            conv1 = tf.layers.conv2d(inputs=dense_out1, filters=filter, kernel_size=kernel_size, padding=padding,
+                                     activation=activation,
+                                     name=conv_name, dilation_rate=dilation_rate)
+            pool1 = tf.layers.max_pooling2d(inputs=conv1, pool_size=pool_size, strides=strides)
+
+            # conv_pool1 = tf.layers.conv2d(inputs=pool1, filters=filter, kernel_size=[3,3], padding='valid',
+            #                          activation=activation,
+            #                          name=conv_pool_name, dilation_rate=dilation_rate)
+            return pool1
+
+    # ========================
+    def dense_block(self, input, filter, padding='same', activation=None, name='dense_sub_block', flag=0,
+                    concat_flag=0):
+        with tf.name_scope(name):
+            db_conv1 = tf.layers.conv2d(input, filters=filter * 4, kernel_size=self.kernel_size1, padding=padding,
+                                        activation=activation)
+            db_conv2 = tf.layers.conv2d(db_conv1, filters=filter, kernel_size=self.kernel_size2, padding=padding,
+                                        activation=activation)
+            db_concat = tf.concat([input, db_conv2], 3)
+        return db_concat
+
+
+
+    # ========================
+    def dense_loop(self, loop, input, crop_size, db_size, padding='same', activation=None, name='dense_block', flag=0,
+                   concat_flag=0):
+        with tf.name_scope(name):
+            output = input
+            for i in range(loop):
+                output = self.dense_block(output, filter=self.growth_rate,
+                                          padding=padding, activation=activation, name='dense_sub_block' + str(i),
+                                          flag=flag, concat_flag=concat_flag)
+
+        cropped = output[:,
+                  tf.to_int32(db_size / 2) - tf.to_int32(crop_size / 2) - 1:
+                  tf.to_int32(db_size / 2) + tf.to_int32(crop_size / 2),
+                  tf.to_int32(db_size / 2) - tf.to_int32(crop_size / 2) - 1:
+                  tf.to_int32(db_size / 2) + tf.to_int32(crop_size / 2), :]
+        # #
+        # cropped = output[:,
+        #           np.int32(db_size / 2) - np.int32(crop_size / 2) - 1:
+        #           np.int32(db_size / 2) + np.int32(crop_size / 2),
+        #           np.int32(db_size / 2) - np.int32(crop_size / 2) - 1:
+        #           np.int32(db_size / 2) + np.int32(crop_size / 2), :]
+        return output, cropped
+
+    # ========================
+    def concat_chunk(self,chunk,conv,crop_size,chunk_size,chunk_depth,name):
+        # chunk = conc11
+        # crop_size = conv.shape[1].value
+        # chunk_size = chunk.shape[1].value
+        # chunk_depth = chunk.shape[3].value
+        # pad_size = int((chunk_size - crop_size) / 2)
+        pad_size = tf.div(tf.add(chunk_size ,-crop_size) , 2)
+
+        # mid_chunk = chunk[:, np.int32(chunk_size / 2) - np.int32(crop_size / 2) - 1:
+        #             np.int32(chunk_size / 2) + np.int32(crop_size / 2),
+        #             np.int32(chunk_size / 2) - np.int32(crop_size / 2) - 1:
+        #             np.int32(chunk_size / 2) + np.int32(crop_size / 2), :]
+        mid_chunk = chunk[:, tf.to_int32(chunk_size / 2) -tf.to_int32(crop_size / 2) - 1:
+                    tf.to_int32(chunk_size / 2) + tf.to_int32(crop_size / 2),
+                    tf.to_int32(chunk_size / 2) - tf.to_int32(crop_size / 2) - 1:
+                    tf.to_int32(chunk_size / 2) + tf.to_int32(crop_size / 2), :]
+
+
+        padded_mid_chunk = tf.pad((mid_chunk), [[0, 0], [pad_size, pad_size, ], [pad_size, pad_size], [0, 0]], "CONSTANT")
+        concat1 = tf.concat([conv, mid_chunk], 3)
+        conv_chunk1 = tf.layers.conv2d(inputs=concat1, filters=chunk_depth, kernel_size=[3, 3], padding='same',
+                                       activation=None,
+                                       name=name, dilation_rate=(1, 1))
+        padd_conv = tf.pad(conv_chunk1, [[0, 0], [pad_size, pad_size, ], [pad_size, pad_size], [0, 0]], "CONSTANT")
+
+
+        res_chunk = chunk - padded_mid_chunk + padd_conv
+        return res_chunk
+    # ========================
+
+    def dens_net(self, image, is_training, dropout_rate, dim=95):
+        # x = 527
+        # l2 = x / 2
+        # l3 = l2 / 2
+        # l4 = l3 / 2
+        #
+        # l4_1 = l4 - 2
+        #
+        # dl4 = int(l4_1) * 2 + 1
+        # dl4_1 = dl4 - 2
+        # dl3 = dl4_1 * 2 + 1
+        # dl3_1 = dl3 - 2
+        #
+        # dl2 = dl3_1 * 2 + 1
+        # dl2_1 = dl2 - 2
+
+        # dim2 = 95
+        # db_size1 = np.int32(dim2)
+        # db_size2 = np.int32(db_size1 / 2)
+        # db_size3 = np.int32(db_size2 / 2)
+        # crop_size1 = np.int32(((db_size3 - 2) * 2 + 1.0))
+        # crop_size2 = np.int32((crop_size1 - 2) * 2 + 1)
+        # db_size0 = 0
+        # crop_size0 = 0
+
+        db_size1 = tf.to_int32(dim)
+        db_size2 = tf.to_int32(db_size1 / 2)
+        db_size3 = tf.to_int32(db_size2 / 2)
+        crop_size1 = tf.add(tf.multiply(db_size3-2, 2), 1)
+        crop_size2 = tf.add(tf.multiply(tf.add(crop_size1, -2), 2), 1)
+
+        db_size0 = tf.to_int32(0)
+        crop_size0 = tf.to_int32(0)
+
+
+
+        [dense_out1, conc1] = self.dense_loop(loop=self.config[0], input=image, crop_size=crop_size2, db_size=db_size1,
+                                                padding='same', activation=None, name='dense_block_1', concat_flag=1)
+
+        pool1 = self.transition_layer(dense_out1, 'transition_1', conv_name='conv1',conv_pool_name='conv_pool_name1', kernel_size=[1, 1], padding='same',
+                                      activation=None,
+                                      dilation_rate=(1, 1), pool_size=[2, 2], strides=2)
+        # ========================
+        [dense_out2, conc2] = self.dense_loop(loop=self.config[1], input=pool1, crop_size=crop_size1, db_size=db_size2,
+                                              padding='same', activation=None, name='dense_block_2')
+
+        pool2 = self.transition_layer(dense_out2, 'transition_2', conv_name='conv2',conv_pool_name='conv_pool_name2', kernel_size=[1, 1], padding='same',
+                                      activation=None,
+                                      dilation_rate=(1, 1), pool_size=[2, 2], strides=2)
+        # ========================
+        [dense_out3, conc3] = self.dense_loop(loop=self.config[2], input=pool2, crop_size=crop_size0, db_size=db_size0,
+                                              padding='same', activation=None, name='dense_block_3')
+
+        conv1 = tf.layers.conv2d(inputs=dense_out3, filters=int(dense_out3.shape[3].value), kernel_size=[3, 3], padding='valid',
+                                 activation=None,
+                                 name='conv_deconv_1', dilation_rate=(1, 1))
+        # ========================
+        deconv1 = tf.layers.conv2d_transpose(conv1, filters=int(conv1.shape[3].value), kernel_size=[3, 3], strides=(2, 2),
+                                             padding='valid')
+        conc11=tf.concat([conc2, deconv1], 3)
+
+
+        [dense_out5, conctmp] = self.dense_loop(loop=self.config[3], input=conc11, crop_size=crop_size0, db_size=db_size0,
+                                              padding='same', activation=None, name='dense_block_5')
+        conv2 = tf.layers.conv2d(inputs=dense_out5, filters=int(dense_out5.shape[3].value/2), kernel_size=[3, 3], padding='valid',
+                                 activation=None,
+                                 name='conv_deconv_2', dilation_rate=(1, 1))
+        # =========================================================
+        deconv2 = tf.layers.conv2d_transpose(conv2, filters=int(conv2.shape[3].value), kernel_size=[3, 3], strides=(2, 2),
+                                             padding='valid')
+        conc22 = tf.concat([conc1, deconv2], 3)
+        [dense_out6, conctmp] = self.dense_loop(loop=self.config[4], input=conc22, crop_size=crop_size0, db_size=db_size0,
+                                                padding='same', activation=None, name='dense_block_6')
+        conv3 = tf.layers.conv2d(inputs=dense_out6, filters=int(dense_out6.shape[3].value/2), kernel_size=[3, 3], padding='valid',
+                                 activation=None,
+                                 name='conv_deconv_3', dilation_rate=(1, 1))
+        # =========================================================
+
+
+        # classification layer:
+        with tf.name_scope('classification_layer'):
+            # post_rm = tf.reduce_mean(pool3, [1, 2], name='global_avg_pool', keep_dims=True)
+            fc1 = tf.layers.conv2d(conv3, filters=64, kernel_size=[3,3], padding='same', strides=(1, 1),
+                                 activation=tf.nn.relu, dilation_rate=(1, 1),name='fc1')
+
+            dropout = tf.layers.dropout(inputs=fc1, rate=dropout_rate, training=is_training,name='droup_out')
+
+            y = tf.layers.conv2d(dropout, filters=self.class_no, kernel_size=[3,3], padding='same', strides=(1, 1),
+                                 activation=tf.nn.softmax, dilation_rate=(1, 1), name='fc2')
+
+        print(' total numbe of variables %s' % (
+            np.sum([np.prod(v.get_shape().as_list()) for v in tf.trainable_variables()])))
+
+
+
+
+        '''h_fc1 = tf.contrib.layers.fully_connected(post_rm,20,activation_fn=tf.nn.relu)
+
+        #Fully connected layer #2
+        #h_fc2 = tf.layers.conv2d(h_fc1,512,[3,3],padding="valid", strides=(1,1),activation=tf.nn.relu, dilation_rate=(1, 1))
+        h_fc2 = tf.contrib.layers.fully_connected(h_fc1,8,activation_fn=tf.nn.relu)
+
+        #Fully connected layer #3
+        #y =  tf.layers.conv2d(h_fc2,2,[3,3],padding="valid", strides=(1,1),activation=tf.nn.relu, dilation_rate=(1, 1))
+        y = tf.contrib.layers.fully_connected(h_fc2,class_no,activation_fn=tf.nn.relu)
+'''
+        return y
+
+    # ========================
+    # def dens_net01(self, image, is_training, dropout_rate):
+    #         pre_conv = tf.layers.conv2d(image, filters=2 * self.growth_rate, kernel_size=[7, 7], strides=(2, 2),
+    #                                     padding='same',
+    #                                     activation=None, name='pre_conv', dilation_rate=(1, 1))
+    #         # pre_bn=tf.layers.batch_normalization(pre_conv)
+    #         with tf.name_scope('preprocessing'):
+    #             pre_reu = tf.nn.relu(pre_conv)
+    #             pre_pool = tf.layers.max_pooling2d(pre_reu, pool_size=[2, 2], strides=2)
+    #         # dense block #1
+    #
+    #         dense_out1 = self.dense_loop(loop=6, input=pre_pool,
+    #                                      padding='same', activation=None, name='dense_block_6')
+    #
+    #         pool1 = self.transition_layer(dense_out1, 'transition_1', conv_name='conv1', kernel_size=[1, 1],
+    #                                       padding='same', activation=None,
+    #                                       dilation_rate=(1, 1), pool_size=[2, 2], strides=2)
+    #         # ========================
+    #         dense_out2 = self.dense_loop(loop=8, input=pool1,
+    #                                      padding='same', activation=None, name='dense_block_8')
+    #
+    #         pool2 = self.transition_layer(dense_out2, 'transition_2', conv_name='conv2', kernel_size=[1, 1],
+    #                                       padding='same',
+    #                                       activation=None,
+    #                                       dilation_rate=(1, 1), pool_size=[2, 2], strides=2)
+    #         # =========================================================
+    #         dense_out3 = self.dense_loop(loop=10, input=pool2,
+    #                                      padding='same', activation=None, name='dense_block_10')
+    #
+    #         pool3 = self.transition_layer(dense_out3, 'transition_3', conv_name='conv3', kernel_size=[1, 1],
+    #                                       padding='same',
+    #                                       activation=None,
+    #                                       dilation_rate=(1, 1), pool_size=[2, 2], strides=2)
+    #
+    #         # pro_conv=tf.layers.conv2d(inputs=pool3, filters=100, kernel_size=[2, 2], padding='valid', activation=None,
+    #         #                  name='f22f', dilation_rate=(1, 1))
+    #         # =========================================================
+    #         # dense_out4 = self.dense_loop(loop=12, input=pool3,
+    #         #                              padding='same', activation=None,name='dense_block_12')
+    #         # pool4 = tf.layers.max_pooling2d(inputs=dense_out4, pool_size=[2, 2], strides=2)
+    #
+    #
+    #         de_conv1 = tf.layers.conv2d_transpose(pool3, filters=1024, kernel_size=[1, 1], strides=(2, 2),
+    #                                               padding='valid')
+    #         dense_out4 = self.dense_loop(loop=10, input=de_conv1,
+    #                                      padding='same', activation=None, name='dense_block_10_2')
+    #         pro_conv1 = tf.layers.conv2d(dense_out4, filters=dense_out4.shape[3], kernel_size=3, padding='valid',
+    #                                      activation=None)
+    #
+    #         # =========================================================
+    #
+    #         de_conv2 = tf.layers.conv2d_transpose(pro_conv1, filters=800, kernel_size=[1, 1], strides=(2, 2),
+    #                                               padding='valid')
+    #         dense_out5 = self.dense_loop(loop=8, input=de_conv2,
+    #                                      padding='same', activation=None, name='dense_block_8_2')
+    #         pro_conv2 = tf.layers.conv2d(dense_out5, filters=dense_out5.shape[3], kernel_size=2, padding='valid',
+    #                                      activation=None)
+    #
+    #         # =========================================================
+    #
+    #         de_conv3 = tf.layers.conv2d_transpose(pro_conv2, filters=560, kernel_size=[1, 1], strides=(2, 2),
+    #                                               padding='valid')
+    #         dense_out6 = self.dense_loop(loop=6, input=de_conv3,
+    #                                      padding='same', activation=None, name='dense_block_6_2')
+    #
+    #         pro_conv3 = tf.layers.conv2d(dense_out6, filters=dense_out6.shape[3], kernel_size=2, padding='valid',
+    #                                      activation=None)
+    #         # =========================================================
+    #         de_conv4 = tf.layers.conv2d_transpose(pro_conv3, filters=360, kernel_size=[1, 1], strides=(2, 2),
+    #                                               padding='valid')
+    #         dense_out7 = self.dense_loop(loop=2, input=de_conv4,
+    #                                      padding='same', activation=None, name='dense_block_2')
+    #
+    #         pro_conv4 = tf.layers.conv2d(dense_out7, filters=dense_out7.shape[3], kernel_size=2, padding='valid',
+    #                                      activation=None)
+    #         # =========================================================
+    #         de_conv5 = tf.layers.conv2d_transpose(pro_conv4, filters=260, kernel_size=[1, 1], strides=(2, 2),
+    #                                               padding='valid')
+    #         dense_out8 = self.dense_loop(loop=2, input=de_conv5,
+    #                                      padding='same', activation=None, name='dense_block_2')
+    #
+    #         pro_conv5 = tf.layers.conv2d(dense_out8, filters=dense_out8.shape[3], kernel_size=2, padding='valid',
+    #                                      activation=None)
+    #
+    #         # post_bn = tf.layers._normalization(dense_out4)
+    #         post_reu = tf.nn.relu(pro_conv5)
+    #
+    #         # classification layer:
+    #         with tf.name_scope('classification_layer'):
+    #             # post_rm = tf.reduce_mean(post_reu, [1, 2], name='global_avg_pool', keep_dims=True)
+    #             fc1 = tf.layers.conv2d(post_reu, filters=64, kernel_size=[1, 1], padding='valid', strides=(1, 1),
+    #                                    activation=tf.nn.relu, dilation_rate=(1, 1), name='fc1')
+    #
+    #             dropout = tf.layers.dropout(inputs=fc1, rate=dropout_rate, training=is_training, name='droup_out')
+    #
+    #             y = tf.layers.conv2d(dropout, filters=self.class_no, kernel_size=[1, 1], padding='valid',
+    #                                  strides=(1, 1),
+    #                                  activation=None, dilation_rate=(1, 1), name='fc2')
+    #
+    #         '''h_fc1 = tf.contrib.layers.fully_connected(post_rm,20,activation_fn=tf.nn.relu)
+    #
+    #         #Fully connected layer #2
+    #         #h_fc2 = tf.layers.conv2d(h_fc1,512,[3,3],padding="valid", strides=(1,1),activation=tf.nn.relu, dilation_rate=(1, 1))
+    #         h_fc2 = tf.contrib.layers.fully_connected(h_fc1,8,activation_fn=tf.nn.relu)
+    #
+    #         #Fully connected layer #3
+    #         #y =  tf.layers.conv2d(h_fc2,2,[3,3],padding="valid", strides=(1,1),activation=tf.nn.relu, dilation_rate=(1, 1))
+    #         y = tf.contrib.layers.fully_connected(h_fc2,class_no,activation_fn=tf.nn.relu)    '''
+    #     return y
+    # ========================
+
+
+
+    def vgg(self, image):
+        conv1 = tf.layers.conv2d(image, filters=64, kernel_size=[3, 3], strides=(2, 2), padding='valid',
+                                 activation=None, name='conv1', dilation_rate=(1, 1))
+
+        pool1 = tf.layers.max_pooling2d(conv1, pool_size=[2, 2], strides=2)
+
+        conv2 = tf.layers.conv2d(pool1, filters=64, kernel_size=[3, 3], strides=(2, 2), padding='valid',
+                                 activation=None, name='conv2', dilation_rate=(1, 1))
+
+        pool2 = tf.layers.max_pooling2d(conv2, pool_size=[2, 2], strides=2)
+
+        conv3 = tf.layers.conv2d(pool2, filters=128, kernel_size=[3, 3], strides=(2, 2), padding='valid',
+                                 activation=None, name='conv3', dilation_rate=(1, 1))
+
+        pool3 = tf.layers.max_pooling2d(conv3, pool_size=[2, 2], strides=2)
+
+        y = tf.layers.conv2d(pool3, filters=2, kernel_size=[1, 1], padding='valid', strides=(1, 1),
+                             activation=None, dilation_rate=(1, 1))
+        return y
+        # =======================
