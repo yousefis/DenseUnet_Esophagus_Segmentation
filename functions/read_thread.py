@@ -1,7 +1,12 @@
 import  threading, time
 import numpy as np
 import functions.settings as settings
+
 class read_thread(threading.Thread):
+    '''
+    This class reads the patches from a bunch of images in a parallel way
+    '''
+
     def __init__ (self,_fill_thread,mutex,validation_sample_no=0,is_training=1):
         threading.Thread.__init__(self)
         self._fill_thread=_fill_thread
@@ -23,26 +28,29 @@ class read_thread(threading.Thread):
                     # while len(settings.bunch_GTV_patches) > 300:
                     #     print('sleep bunch_GTV_patches:%d', len(settings.bunch_GTV_patches))
                     #     time.sleep(3)
-                    # thread should do the thing if not paused
+                    # thread should do the thing iflen( not paused
                     if self.is_training==1:
                         if len(settings.bunch_GTV_patches)==0 :
                             settings.train_queue.acquire()
                             settings.bunch_CT_patches=settings.bunch_CT_patches2.copy()
                             settings.bunch_GTV_patches=settings.bunch_GTV_patches2.copy()
-                            settings.bunch_Penalize_patches=[]
+                            settings.bunch_Penalize_patches=settings.bunch_Penalize_patches2.copy()
+
                             settings.bunch_CT_patches2 = []
                             settings.bunch_GTV_patches2 = []
+                            settings.bunch_Penalize_patches2 = []
                             settings.train_queue.release()
                             self._fill_thread.resume()
                             #time.sleep(2)
                         else:
-                            if len(settings.bunch_CT_patches2) and len(settings.bunch_GTV_patches2):
+                            if len(settings.bunch_CT_patches2) and len(settings.bunch_GTV_patches2)and len(settings.bunch_Penalize_patches2):
                                 settings.train_queue.acquire()
                                 settings.bunch_CT_patches = np.vstack((settings.bunch_CT_patches,settings.bunch_CT_patches2))
                                 settings.bunch_GTV_patches = np.vstack((settings.bunch_GTV_patches,settings.bunch_GTV_patches2))
-                                settings.bunch_Penalize_patches = []
+                                settings.bunch_Penalize_patches = np.vstack((settings.bunch_Penalize_patches,settings.bunch_Penalize_patches2))
                                 settings.bunch_CT_patches2=[]
                                 settings.bunch_GTV_patches2=[]
+                                settings.bunch_Penalize_patches2 = []
                                 settings.train_queue.release()
                                 self._fill_thread.resume()
 
@@ -50,8 +58,14 @@ class read_thread(threading.Thread):
                         if len(settings.bunch_CT_patches_vl) > settings.validation_totalimg_patch:
                             del settings.bunch_CT_patches_vl2
                             del settings.bunch_GTV_patches_vl2
+                            del settings.bunch_Penalize_patches2
                             break
-                        if (len(settings.bunch_GTV_patches_vl) == 0) &(len(settings.bunch_GTV_patches_vl2) > 0):
+                        if ((len(settings.bunch_GTV_patches_vl) == 0) \
+                                &(len(settings.bunch_GTV_patches_vl) == 0)\
+                                &(len(settings.bunch_Penalize_patches) == 0)\
+                                &(len(settings.bunch_CT_patches_vl2)>0)\
+                                &(len(settings.bunch_Penalize_patches_vl2)>0)\
+                                &(len(settings.bunch_GTV_patches_vl2)>0)):
                             settings.bunch_CT_patches_vl = settings.bunch_CT_patches_vl2
                             settings.bunch_CT_patches_vl2 = []
 
@@ -61,7 +75,12 @@ class read_thread(threading.Thread):
                             settings.bunch_Penalize_patches_vl = settings.bunch_Penalize_patches_vl2
                             settings.bunch_Penalize_patches_vl2 = []
                             print('settings.bunch_CT_patches_vl lEN: %d' %(len(settings.bunch_CT_patches_vl )))
-                        elif (len(settings.bunch_GTV_patches_vl2) > 0)&(len(settings.bunch_GTV_patches_vl2) > 0):
+                        elif ((len(settings.bunch_GTV_patches_vl) > 0) \
+                                &(len(settings.bunch_GTV_patches_vl) > 0)\
+                                &(len(settings.bunch_Penalize_patches) > 0)\
+                                &(len(settings.bunch_GTV_patches_vl2) > 0)\
+                                &(len(settings.bunch_GTV_patches_vl2) > 0)\
+                                &(len(settings.bunch_Penalize_patches_vl2) > 0)):
                             settings.bunch_CT_patches_vl = np.vstack((settings.bunch_CT_patches_vl,settings.bunch_CT_patches_vl2))
                             settings.bunch_CT_patches_vl2 = []
 

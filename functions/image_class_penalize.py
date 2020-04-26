@@ -14,7 +14,7 @@ class image_class:
         self.Torsos=Torsos
         self.Penalize=Penalize
         self.bunch_of_images_no = bunch_of_images_no
-        self.node = collections.namedtuple('node', 'img_index CT_image GTV_image Torso_image  Penalize_image min_torso max_torso voxel_size origin direction depth width height ct_name gtv_name torso_name')
+        self.node = collections.namedtuple('node', 'img_index CT_image GTV_image Torso_image  Penalize_image min_torso max_torso voxel_size origin direction depth width height ct_name gtv_name torso_name penalize_name')
         self.collection=[]
         self.is_training=is_training
         self.patch_window=patch_window
@@ -238,7 +238,7 @@ class image_class:
 
         GTV_image1 = sitk.ReadImage(''.join(self.GTVs[int(img_index)]))
         Torso_image1 = sitk.ReadImage(''.join(self.Torsos[int(img_index)]))
-        Penalize_image1 =  sitk.ReadImage(''.join(self.Penalize[int(img_index)]))
+        Penalize_image1 = []  # sitk.ReadImage(''.join(self.Penalize[int(img_index)]))
 
         padding_size = self.patch_window + 15  # 87
 
@@ -267,11 +267,6 @@ class image_class:
                                                          int(padding_size / 2)],
                                           padUpperBound=[int(padding_size / 2) + 1, int(padding_size / 2) + 1,
                                                          int(padding_size / 2) + 1], constant=0)
-        Penalize_image1 = self.image_padding(img=Penalize_image1,
-                                          padLowerBound=[int(padding_size / 2), int(padding_size / 2),
-                                                         int(padding_size / 2)],
-                                          padUpperBound=[int(padding_size / 2) + 1, int(padding_size / 2) + 1,
-                                                         int(padding_size / 2) + 1], constant=0)
 
         if deform == 1:
             [CT_image1, GTV_image1, Torso_image1, Penalize_image1] = self.Bspline_distort(CT_image1, GTV_image1,
@@ -295,7 +290,7 @@ class image_class:
         height = GTV_image.shape[2]
 
         n = self.node(img_index=img_index, CT_image=CT_image, GTV_image=GTV_image, Torso_image=Torso_image_mul,
-                      Penalize_image=Penalize_image1,
+                      Penalize_image=[],
                       min_torso=min_torso, max_torso=max_torso,
                       voxel_size=voxel_size, origin=origin, direction=direction,
                       depth=depth, width=width, height=height, ct_name=ct_name, gtv_name=gtv_name,
@@ -334,6 +329,7 @@ class image_class:
         ct_name=self.CTs[int(img_index)]
         gtv_name=self.GTVs[int(img_index)]
         torso_name=self.Torsos[int(img_index)]
+        penalize_name = self.Penalize[int(img_index)]
 
 
         min_torso = np.min(np.where(Torso_image_mul == 1)[0])
@@ -341,10 +337,11 @@ class image_class:
         depth = GTV_image.shape[0]
         width=GTV_image.shape[1]
         height = GTV_image.shape[2]
-        n = self.node(img_index=img_index, CT_image=CT_image, GTV_image=GTV_image, Torso_image=Torso_image_mul,Penalize_image=Penalize_image1,
+        n = self.node(img_index=img_index, CT_image=CT_image, GTV_image=GTV_image, Torso_image=Torso_image_mul,Penalize_image=Penalize_image,
                       min_torso=min_torso,max_torso=max_torso,
                       voxel_size=voxel_size, origin=origin, direction=direction,
-                      depth=depth, width=width,height=height,ct_name=ct_name, gtv_name=gtv_name, torso_name=torso_name)
+                      depth=depth, width=width,height=height,ct_name=ct_name,
+                      gtv_name=gtv_name, torso_name=torso_name,penalize_name=penalize_name)
         return n
 
     def return_normal_image(self,CT_image,max_range,min_range,min_normal,max_normal):
@@ -544,12 +541,15 @@ class image_class:
     def shuffle_lists(self, CT_image_patchs, GTV_patchs,Penalize_patchs):
             index_shuf = list(range(len(GTV_patchs)))
             shuffle(index_shuf)
+            
             CT_image_patchs1 = np.vstack([CT_image_patchs[sn]]
                                          for sn in index_shuf)
             GTV_patchs1 = np.vstack([GTV_patchs[sn]]
                                     for sn in index_shuf)
 
-            Penalize_patchs1 = []#np.vstack([Penalize_patchs[sn]] for sn in index_shuf)
+            Penalize_patchs1 = np.vstack([Penalize_patchs[sn]]
+                                             for sn in index_shuf)
+
             return CT_image_patchs1, GTV_patchs1,Penalize_patchs1
     #--------------------------------------------------------------------------------------------------------
             # read patches from the images which are in the RAM
@@ -577,6 +577,7 @@ class image_class:
             GTV_image = self.collection[ii].GTV_image
             CT_image = self.collection[ii].CT_image
             Torso_image = self.collection[ii].Torso_image
+            Penalize_image = self.collection[ii].Penalize_image
 
             img_width = self.collection[ii].width
             img_height = self.collection[ii].height
@@ -666,7 +667,17 @@ class image_class:
                                     range(len(rand_height))]).reshape(len(rand_depth), GTV_patchs_size,
                                                                       GTV_patchs_size, GTV_patchs_size)
 
-
+            Penalize_patchs1 = np.stack([(Penalize_image[
+                                     int(rand_depth[sn]) - int(GTV_patchs_size / 2) - 1:
+                                     int(rand_depth[sn]) + int(GTV_patchs_size / 2),
+                                     int(rand_width[sn]) - int(GTV_patchs_size / 2) - 1:
+                                     int(rand_width[sn]) + int(GTV_patchs_size / 2),
+                                     int(rand_height[sn]) - int(GTV_patchs_size / 2) - 1:
+                                     int(rand_height[sn]) + int(GTV_patchs_size / 2)
+                                     ]).astype(float)
+                                    for sn in
+                                    range(len(rand_height))]).reshape(len(rand_depth), GTV_patchs_size,
+                                                                      GTV_patchs_size, GTV_patchs_size)
             CT_image_patchs2 = np.stack(
                 [(
                  CT_image[int(rand_depth1[sn]) - int(patch_window / 2) - 1:int(rand_depth1[sn]) + int(patch_window / 2),
@@ -684,13 +695,25 @@ class image_class:
                                     for sn in
                                     range(len(rand_height1))]).reshape(len(rand_depth1), GTV_patchs_size,
                                                                        GTV_patchs_size, GTV_patchs_size)
-
+            Penalize_patchs2 = np.stack([(Penalize_image[
+                                     int(rand_depth1[sn]) - int(GTV_patchs_size / 2) - 1:
+                                     int(rand_depth1[sn]) + int(GTV_patchs_size / 2),
+                                     int(rand_width1[sn]) - int(GTV_patchs_size / 2) - 1:
+                                     int(rand_width1[sn]) + int(GTV_patchs_size / 2),
+                                     int(rand_height1[sn]) - int(GTV_patchs_size / 2) - 1:
+                                      int(rand_height1[sn]) + int(GTV_patchs_size / 2)
+                                     ]).astype(float)
+                                    for sn in
+                                    range(len(rand_height1))]).reshape(len(rand_depth1), GTV_patchs_size,
+                                                                       GTV_patchs_size, GTV_patchs_size)
             if len(CT_image_patchs) == 0:
                 CT_image_patchs = CT_image_patchs1
                 CT_image_patchs = np.vstack((CT_image_patchs, CT_image_patchs2))
 
                 GTV_patchs = GTV_patchs1
                 GTV_patchs = np.vstack((GTV_patchs, GTV_patchs2))
+                Penalize_patchs=Penalize_patchs1
+                Penalize_patchs = np.vstack((Penalize_patchs, Penalize_patchs2))
 
 
             else:
@@ -698,11 +721,13 @@ class image_class:
                 CT_image_patchs = np.vstack((CT_image_patchs, CT_image_patchs2))
                 GTV_patchs = np.vstack((GTV_patchs, GTV_patchs1))
                 GTV_patchs = np.vstack((GTV_patchs, GTV_patchs2))
-
+                Penalize_patchs = np.vstack((Penalize_patchs, Penalize_patchs1))
+                Penalize_patchs = np.vstack((Penalize_patchs, Penalize_patchs2))
 
             print(len(GTV_patchs))
 
-
+        if len(GTV_patchs)!=len(Penalize_patchs):
+                print(1)
         CT_image_patchs1, GTV_patchs1, Penalize_patchs1 = self.shuffle_lists(CT_image_patchs, GTV_patchs,
                                                                              Penalize_patchs)
 
@@ -728,8 +753,7 @@ class image_class:
         settings.vl_isread=True
         settings.read_patche_mutex_vl.release()
         if len(settings.bunch_CT_patches_vl2) != len(
-                settings.bunch_GTV_patches_vl2) or len(settings.bunch_CT_patches_vl2) != len(
-                settings.bunch_Penalize_patches_vl2):  # or len(settings.bunch_Penalize_patches_vl2)!=len(settings.bunch_GTV_patches_vl2 ):
+                settings.bunch_GTV_patches_vl2) or len(settings.bunch_Penalize_patches_vl2)!=len(settings.bunch_GTV_patches_vl2 ):
             print('smth wrong')
 
 
@@ -760,13 +784,14 @@ class image_class:
             GTV_image = self.collection[ii].GTV_image
             CT_image = self.collection[ii].CT_image
             Torso_image = self.collection[ii].Torso_image
+            Penalize_image = self.collection[ii].Penalize_image
 
             img_width= self.collection[ii].width
             img_height= self.collection[ii].height
 
             min_torso = self.collection[ii].min_torso
             max_torso = self.collection[ii].max_torso
-            print(self.collection[ii].ct_name)
+            # print(self.collection[ii].ct_name)
 
             tumor_begin = np.min(np.where(GTV_image != GTV_image[0][0][0])[0])
             tumor_end = np.max(np.where(GTV_image != GTV_image[0][0][0])[0])
@@ -850,7 +875,17 @@ class image_class:
                                     for sn in
                                     range(len(rand_height))]).reshape(len(rand_depth), GTV_patchs_size,
                                                             GTV_patchs_size, GTV_patchs_size)
-
+            Penalize_patchs1 = np.stack([(Penalize_image[
+                                     int(rand_depth[sn]) - int(GTV_patchs_size / 2) - 1:
+                                     int(rand_depth[sn]) + int(GTV_patchs_size / 2),
+                                     int(rand_width[sn]) - int(GTV_patchs_size / 2) - 1:
+                                     int(rand_width[sn]) + int(GTV_patchs_size / 2)
+                                     , int(rand_height[sn]) - int(GTV_patchs_size / 2) - 1:
+                                     int(rand_height[sn]) + int(GTV_patchs_size / 2)
+                                     ] ).astype(float)
+                                    for sn in
+                                    range(len(rand_height))]).reshape(len(rand_depth), GTV_patchs_size,
+                                                            GTV_patchs_size, GTV_patchs_size)
 
             CT_image_patchs2 = np.stack(
                 [(CT_image[int(rand_depth1[sn]) - int(patch_window / 2) - 1:int(rand_depth1[sn]) + int(patch_window / 2),
@@ -869,7 +904,17 @@ class image_class:
                                     range(len(rand_height1))]).reshape(len(rand_depth1), GTV_patchs_size,
                                                                       GTV_patchs_size, GTV_patchs_size)
 
-
+            Penalize_patchs2 = np.stack([(Penalize_image[
+                                     int(rand_depth1[sn]) - int(GTV_patchs_size / 2) - 1:
+                                     int(rand_depth1[sn]) + int(GTV_patchs_size / 2),
+                                     int(rand_width1[sn]) - int(GTV_patchs_size / 2) - 1:
+                                     int(rand_width1[sn]) + int(GTV_patchs_size / 2)
+            , int(rand_height1[sn]) - int(GTV_patchs_size / 2) - 1:
+              int(rand_height1[sn]) + int(GTV_patchs_size / 2)
+                                     ]).astype(float)
+                                    for sn in
+                                    range(len(rand_height1))]).reshape(len(rand_depth1), GTV_patchs_size,
+                                                                       GTV_patchs_size, GTV_patchs_size)
             if len(CT_image_patchs)==0:
                 CT_image_patchs = CT_image_patchs1
                 CT_image_patchs = np.vstack((CT_image_patchs, CT_image_patchs2))
@@ -877,15 +922,20 @@ class image_class:
                 GTV_patchs = GTV_patchs1
                 GTV_patchs = np.vstack((GTV_patchs, GTV_patchs2))
 
+                Penalize_patchs = Penalize_patchs1
+                Penalize_patchs = np.vstack((Penalize_patchs, Penalize_patchs2))
 
             else:
                 CT_image_patchs = np.vstack((CT_image_patchs,CT_image_patchs1))
                 CT_image_patchs = np.vstack((CT_image_patchs,CT_image_patchs2))
                 GTV_patchs = np.vstack((GTV_patchs,GTV_patchs1))
                 GTV_patchs = np.vstack((GTV_patchs,GTV_patchs2))
-
+                Penalize_patchs = np.vstack((Penalize_patchs, Penalize_patchs1))
+                Penalize_patchs = np.vstack((Penalize_patchs, Penalize_patchs2))
 
             print(len(GTV_patchs))
+            if len(GTV_patchs)!=len(Penalize_patchs):
+                print(1)
 
 
         CT_image_patchs1, GTV_patchs1,Penalize_patchs1=self.shuffle_lists( CT_image_patchs, GTV_patchs,Penalize_patchs)
@@ -925,22 +975,23 @@ class image_class:
             # \                        len(settings.bunch_Penalize_patches) >= batch_no:
             CT_patch=settings.bunch_CT_patches[0:batch_no]
             GTv_patch=settings.bunch_GTV_patches[0:batch_no]
-            Penalize_patch=[]#settings.bunch_Penalize_patches[0:batch_no]
+            Penalize_patch=settings.bunch_Penalize_patches[0:batch_no]
 
             settings.bunch_CT_patches=np.delete(settings.bunch_CT_patches,range(batch_no),axis=0)
             settings.bunch_GTV_patches=np.delete(settings.bunch_GTV_patches,range(batch_no),axis=0)
-            settings.bunch_Penalize_patches=[]#np.delete(settings.bunch_Penalize_patches,range(batch_no),axis=0)
+            settings.bunch_Penalize_patches=np.delete(settings.bunch_Penalize_patches,range(batch_no),axis=0)
             GTv_patch = np.eye(2)[GTv_patch]
             CT_patch = CT_patch[..., np.newaxis]
+            Penalize_patch = Penalize_patch[..., np.newaxis]
             loss_coef = ( np.asarray([[len(np.where(GTv_patch[i, :, :, :] == 1)[0]) / np.power(self.gtv_patch_window, 3)] for i in range(GTv_patch.shape[0])]))
             loss_coef = np.hstack((loss_coef, 1 - loss_coef)) #tumor vs non-tumor
 
         else:
             settings.bunch_CT_patches = np.delete(settings.bunch_CT_patches, range(len(settings.bunch_CT_patches)), axis=0)
             settings.bunch_GTV_patches = np.delete(settings.bunch_GTV_patches, range(len(settings.bunch_GTV_patches)), axis=0)
-            settings.bunch_Penalize_patches = []
+            settings.bunch_Penalize_patches = np.delete(settings.bunch_Penalize_patches, range(len(settings.bunch_Penalize_patches)), axis=0)
         settings.train_queue.release()
-        if len(CT_patch)!=len(GTv_patch) :
+        if len(CT_patch)!=len(GTv_patch) |len(CT_patch)!=len(Penalize_patch):
             print('smth wrong')
 
 
@@ -952,13 +1003,11 @@ class image_class:
     def return_patches_validation(self, start,end):
             CT_patch = []
             GTv_patch = []
+            Penalize_patch = []
 
             if (len(settings.bunch_CT_patches_vl)-(end)) >= 0\
                     and (len(settings.bunch_GTV_patches_vl)-(end)) >= 0 \
                     and (len(settings.bunch_Penalize_patches_vl) - (end)) >= 0:
-
-
-
                 CT_patch = settings.bunch_CT_patches_vl[start:end]
                 GTv_patch = settings.bunch_GTV_patches_vl[start:end]
                 Penalize_patch = settings.bunch_Penalize_patches_vl[start:end]

@@ -1,11 +1,12 @@
 import time
 import os
 # from functions.densenet_unet import _densenet_unet
-from functions.networks.dense_unet3 import _densenet_unet
+from functions.networks.dense_unet2 import _densenet_unet
 import numpy as np
 import SimpleITK as sitk
 import tensorflow as tf
 import logging
+# import wandb
 # from functions.read_data import _read_data
 from functions.read_data2 import _read_data
 from functions.read_thread import read_thread
@@ -47,8 +48,8 @@ class dense_classify:
         self.img_padded_size = 519
         self.seg_size = 505
 
-        self.GTV_patchs_size =61#49# 61#33
-        self.patch_window = 73#63##87#79#57#47
+        self.GTV_patchs_size =49# 61#33 #            61
+        self.patch_window = 63##87#79#57#47          73
         self.sample_no = sample_no
         self.batch_no = 7
         self.batch_no_validation = 30
@@ -84,6 +85,13 @@ class dense_classify:
             file.write(txt)
     def run_net(self):
 
+        # res= tf.test.is_gpu_available(
+        #     cuda_only=False, min_cuda_compute_capability=None
+        # )
+        # if res==False:
+        #     print(111111111111111111111111111111111111)
+        #     return
+
 
         '''read 2d images from the data:'''
         two_dim=True
@@ -98,7 +106,7 @@ class dense_classify:
         flag=False
         self.alpha_coeff=1
 
-
+        # wandb.init()
 
         '''read path of the images for train, test, and validation'''
 
@@ -219,14 +227,28 @@ class dense_classify:
         tf.summary.image('groundtruth', label_dirX,3)
         # tf.summary.image('pnalize', pnalize_dirX,3)
         tf.summary.image('image',image_dirX ,3)
-        sess = tf.Session()
+
+        print('*****************************************')
+        print('*****************************************')
+        print('*****************************************')
+        sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
+        with tf.Session() as sess:
+            devices = sess.list_devices()
+            print(devices)
+        from tensorflow.python.client import device_lib
+        print(device_lib.list_local_devices())
+        print('*****************************************')
+        print('*****************************************')
+        print('*****************************************')
+
         log_extttt=''#self.log_ext.split('_')[0]+'01'
         train_writer = tf.summary.FileWriter(self.LOGDIR + '/train' + log_extttt,graph=tf.get_default_graph())
         validation_writer = tf.summary.FileWriter(self.LOGDIR + '/validation' + log_extttt, graph=sess.graph)
         # y=_dn.vgg(image)
         extra_update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
         saver=tf.train.Saver(tf.global_variables(), max_to_keep=1000)
-
+        loadModel = 0
+        # if loadModel==0:
         # copyfile('./functions/densenet_unet.py', self.LOGDIR + 'densenet_unet.py')
         copyfile('./functions/densenet_classify2.py', self.LOGDIR + 'densenet_classify2.py')
         copyfile('./functions/image_class.py', self.LOGDIR + 'image_class.py')
@@ -288,10 +310,11 @@ class dense_classify:
 
         extra_update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
         with tf.control_dependencies(extra_update_ops):
-            # optimizer_tmp = tf.train.AdamOptimizer(self.learning_rate)
-            optimizer_tmp = RAdam(learning_rate=self.learning_rate)
-            optimizer = tf.train.experimental.enable_mixed_precision_graph_rewrite(optimizer_tmp)
-            optimizer = optimizer.minimize(cost)
+            optimizer_tmp = tf.train.AdamOptimizer(self.learning_rate)
+            # optimizer = tf.train.AdamOptimizer(self.learning_rate)
+            # optimizer = RAdam(learning_rate=self.learning_rate)
+            # optimizer = tf.train.experimental.enable_mixed_precision_graph_rewrite(optimizer_tmp)
+            optimizer = optimizer_tmp.minimize(cost)
 
         with tf.name_scope('validation'):
             average_validation_accuracy=ave_vali_acc
@@ -317,7 +340,7 @@ class dense_classify:
         np.sum([np.prod(v.get_shape().as_list()) for v in tf.trainable_variables()])))
 
         summ=tf.summary.merge_all()
-        loadModel = 0
+
         point = 0
         itr1 = 0
         if loadModel:
@@ -355,6 +378,7 @@ class dense_classify:
                     acc_validation = 0
                     validation_step = 0
                     dsc_validation=0
+                    # elapsed_time=0
 
                     while (validation_step * self.batch_no_validation <settings.validation_totalimg_patch):
 
@@ -371,7 +395,7 @@ class dense_classify:
                         validation_GTV_label = validation_GTV_image
 
 
-
+                        tic=time.time()
                         [acc_vali, loss_vali,dsc_vali] = sess.run([accuracy, cost,f1_measure],
                                                          feed_dict={image: validation_CT_image_patchs,
                                                                     label: validation_GTV_label,
@@ -384,7 +408,8 @@ class dense_classify:
                                                                     is_training_bn:False,
                                                                     alpha:1,
                                                                     beta:1})
-
+                        elapsed=time.time()-tic
+                        # elapsed_time+=elapsed
 
 
                         acc_validation += acc_vali
@@ -395,12 +420,11 @@ class dense_classify:
                             print('nan problem')
                         process = psutil.Process(os.getpid())
 
-                        # print('%d - > %d:  acc_validation: %f, loss_validation: %f, no_list: %d, memory_percent: %s, memory_info: %s' % (validation_step,validation_step * self.batch_no_validation
-                        #                                                                         ,acc_vali, loss_vali,len(settings.bunch_GTV_patches_vl2),str(process.memory_percent()),str(process.memory_info())))
+
                         print(
-                            '%d - > %d:  acc_validation: %f, loss_validation: %f, memory_percent: %4s' % (
-                                validation_step, validation_step * self.batch_no_validation
-                                , acc_vali, loss_vali, str(process.memory_percent()),
+                            '%d - > %d: elapsed_time:%d acc_validation: %f, loss_validation: %f, memory_percent: %4s' % (
+                                validation_step,validation_step * self.batch_no_validation
+                                , elapsed, acc_vali, loss_vali, str(process.memory_percent()),
                             ))
 
                             # end while
@@ -447,7 +471,7 @@ class dense_classify:
                         continue
 
 
-
+                    tic=time.time()
                     [acc_train1, loss_train1, optimizing,out,dsc_train11] = sess.run([accuracy, cost, optimizer,y,f1_measure],
                                                                      feed_dict={image: train_CT_image_patchs,
                                                                                 label: train_GTV_label,
@@ -463,6 +487,7 @@ class dense_classify:
                                                                                 alpha: self.alpha_coeff,
                                                                                 beta: self.beta_coeff
                                                                                 })
+                    elapsed=time.time()-tic
                     dsc_train1=dsc_train11[1]
 
                     self.x_hist=self.x_hist+1
@@ -497,8 +522,8 @@ class dense_classify:
                     # print('point: %d, step*self.batch_no:%f , LR: %.15f, acc_train1:%f, loss_train1:%f,cost_before:%, memory_percent: %4s' % (int((self.x_hist)),
                     # step * self.batch_no,self.learning_rate, acc_train1, loss_train1,cost_b,str(process.memory_percent())))
                     print(
-                        'point: %d, step*self.batch_no:%f , LR: %.15f, acc_train1:%f, loss_train1:%f,memory_percent: %4s' % (
-                        int((point)),
+                        'point: %d, elapsed_time:%d step*self.batch_no:%f , LR: %.15f, acc_train1:%f, loss_train1:%f,memory_percent: %4s' % (
+                        int((point)),elapsed,
                         step * self.batch_no, self.learning_rate, acc_train1, loss_train1,
                         str(process.memory_percent())))
 

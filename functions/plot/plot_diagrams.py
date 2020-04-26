@@ -1,3 +1,4 @@
+import pandas as pd
 from os import listdir
 
 import SimpleITK as sitk
@@ -6,10 +7,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 from os.path import isfile, join
 
-log_tag='34443_0.5_4_DenseUnet_esoph_06'
-Log = 'Log-28-1-2018/'
-test_path='/srv/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/'+Log+log_tag
-out_dir = '/outputs/'
+log_tag = '23432_0.75_4-train1-03222020_180/'
+Log = '/Log_2019_09_23/Dataset3/'
+test_path='/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/'+Log+log_tag
+out_dir = '/result/'
 plot_tag='1_tumor_dice'
 eps=1E-5
 
@@ -136,7 +137,7 @@ lc=''
 gtv_names=read_names()
 gtv_names.sort()
 for gtv_name in gtv_names:
-    name_list.append(gtv_name.split('outputs/')[1].split('.mha')[0].split('_gtv')[0].split('_CT')[0])
+    name_list.append(gtv_name.split('result/')[1].split('.mha')[0].split('_gtv')[0].split('_CT')[0])
     result_name=gtv_name.split('_gtv.mha')[0]+'_result'+lc+'.mha'
     [TP, TN, FP, FN]=plot_diagrams(gtv_name, result_name)
 
@@ -167,6 +168,8 @@ for gtv_name in gtv_names:
     recall_av.append((recall[0]+recall[1])/2)
 
 
+
+
 plt.close('all')
 f1_bp0 = []
 f1_bp1 = []
@@ -177,31 +180,42 @@ f1_bp_av.append((f1_boxplot_av))
 plt.figure()
 plt.boxplot(f1_bp0)
 plt.title('Tumor Dice value for all the images'+plot_tag)
-plt.savefig('/srv/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/'+Log+log_tag+'/'+out_dir+'f1_bp_tumor'+lc+'.png')
+plt.savefig(test_path+'/'+out_dir+'f1_bp_tumor'+lc+'.png')
+
+
+
+items = {'patient': name_list,
+        'dice': f1_bp0[0]
+        }
+
+df = pd.DataFrame(items, columns = ['patient', 'dice'])
+
+
+df.to_excel(test_path+'/'+out_dir+"dice.xlsx")
 
 plt.figure()
 plt.boxplot(f1_bp1)
 plt.title('Background Dice value for all the images '+plot_tag)
-plt.savefig('/srv/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/'+Log+log_tag+'/'+out_dir+'f1_bp_background'+lc+'.png')
+plt.savefig(test_path+'/'+out_dir+'f1_bp_background'+lc+'.png')
 
 plt.figure()
 plt.boxplot(f1_bp_av)
 plt.title('Average Dice value for all the images'+plot_tag)
-plt.savefig('/srv/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/'+Log+log_tag+'/'+out_dir+'f1_bp_average'+lc+'.png')
+plt.savefig(test_path+'/'+out_dir+'f1_bp_average'+lc+'.png')
 #----------------------
 fpr_bp0 = []
 fpr_bp0.append((fpr0))
 plt.figure()
 plt.boxplot(fpr_bp0, 0, '')
 plt.title('FPR Tumor value for all the images'+plot_tag)
-plt.savefig('/srv/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/'+Log+log_tag+'/'+out_dir+'fpr_bp_tumor'+lc+'.png')
+plt.savefig(test_path+'/'+out_dir+'fpr_bp_tumor'+lc+'.png')
 
 fpr_bp1 = []
 fpr_bp1.append((fpr1))
 plt.figure()
 plt.boxplot(fpr_bp1)
 plt.title('FPR Background value for all the images'+plot_tag)
-plt.savefig('/srv/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/'+Log+log_tag+'/'+out_dir+'fpr_bp_background'+lc+'.png')
+plt.savefig(test_path+'/'+out_dir+'fpr_bp_background'+lc+'.png')
 
 
 fpr_bp = []
@@ -209,7 +223,7 @@ fpr_bp.append((fpr_av))
 plt.figure()
 plt.boxplot(fpr_bp)
 plt.title('FPR Average value for all the images'+plot_tag)
-plt.savefig('/srv/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/'+Log+log_tag+'/'+out_dir+'fpr_bp_average'+lc+'.png')
+plt.savefig(test_path+'/'+out_dir+'fpr_bp_average'+lc+'.png')
 
 #----------------------
 fnr_bp0 = []
@@ -217,14 +231,14 @@ fnr_bp0.append((fnr0))
 plt.figure()
 plt.boxplot(fnr_bp0)
 plt.title('FNR Tumor value for all the images'+plot_tag)
-plt.savefig('/srv/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/'+Log+log_tag+'/'+out_dir+'fnr_bp_tumor'+lc+'.png')
+plt.savefig(test_path+'/'+out_dir+'fnr_bp_tumor'+lc+'.png')
 
 fnr_bp1 = []
 fnr_bp1.append((fnr1))
 plt.figure()
 plt.boxplot(fnr_bp1)
 plt.title('FNR Background value for all the images'+plot_tag)
-plt.savefig('/srv/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/'+Log+log_tag+'/'+out_dir+'fnr_bp_background'+lc+'.png')
+plt.savefig(test_path+'/'+out_dir+'fnr_bp_background'+lc+'.png')
 
 
 fnr_bp = []
@@ -232,21 +246,21 @@ fnr_bp.append((fnr_av))
 plt.figure()
 plt.boxplot(fnr_bp)
 plt.title('FNR Average value for all the images'+plot_tag)
-plt.savefig('/srv/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/'+Log+log_tag+'/'+out_dir+'fnr_bp_average'+lc+'.png')
+plt.savefig(test_path+'/'+out_dir+'fnr_bp_average'+lc+'.png')
 #----------------------
 pres_bp0 = []
 pres_bp0.append((presicion0))
 plt.figure()
 plt.boxplot(pres_bp0)
 plt.title('Precision value for all the images'+plot_tag)
-plt.savefig('/srv/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/'+Log+log_tag+'/'+out_dir+'precision_bp_tumor'+lc+'.png')
+plt.savefig(test_path+'/'+out_dir+'precision_bp_tumor'+lc+'.png')
 
 pres_bp1 = []
 pres_bp1.append((presicion1))
 plt.figure()
 plt.boxplot(pres_bp1)
 plt.title('Precision Background value for all the images'+plot_tag)
-plt.savefig('/srv/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/'+Log+log_tag+'/'+out_dir+'precision_bp_background'+lc+'.png')
+plt.savefig(test_path+'/'+out_dir+'precision_bp_background'+lc+'.png')
 
 
 pres_bp = []
@@ -254,21 +268,21 @@ pres_bp.append((presicion_av))
 plt.figure()
 plt.boxplot(pres_bp)
 plt.title('Precision Average value for all the images'+plot_tag)
-plt.savefig('/srv/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/'+Log+log_tag+'/'+out_dir+'precision_bp_average'+lc+'.png')
+plt.savefig(test_path+'/'+out_dir+'precision_bp_average'+lc+'.png')
 #----------------------
 recall_bp0 = []
 recall_bp0.append((recall0))
 plt.figure()
 plt.boxplot(recall_bp0)
 plt.title('Recall value for all the images'+plot_tag)
-plt.savefig('/srv/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/'+Log+log_tag+'/'+out_dir+'recall_bp_tumor'+lc+'.png')
+plt.savefig(test_path+'/'+out_dir+'recall_bp_tumor'+lc+'.png')
 
 recall_bp1 = []
 recall_bp1.append((recall1))
 plt.figure()
 plt.boxplot(recall_bp1)
 plt.title('Recall Background value for all the images'+plot_tag)
-plt.savefig('/srv/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/'+Log+log_tag+'/'+out_dir+'recall_bp_background'+lc+'.png')
+plt.savefig(test_path+'/'+out_dir+'recall_bp_background'+lc+'.png')
 
 
 recall_bp = []
@@ -276,7 +290,7 @@ recall_bp.append((recall_av))
 plt.figure()
 plt.boxplot(recall_bp)
 plt.title('Recall Average value for all the images'+plot_tag)
-plt.savefig('/srv/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/'+Log+log_tag+'/'+out_dir+'recall_bp_average'+lc+'.png')
+plt.savefig(test_path+'/'+out_dir+'recall_bp_average'+lc+'.png')
 #----------------------
 plt.figure()
 d_bp = []
@@ -289,7 +303,7 @@ plt.margins(.05)
 plt.subplots_adjust(bottom=0.45)
 plt.title('Dice all images'+plot_tag)
 plt.grid()
-plt.savefig('/srv/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/'+Log+log_tag+'/'+out_dir+'dice_bar'+lc+'.png')
+plt.savefig(test_path+'/'+out_dir+'dice_bar'+lc+'.png')
 
 #----------------------
 plt.figure()
@@ -304,7 +318,7 @@ plt.margins(.05)
 plt.subplots_adjust(bottom=0.25)
 plt.title('FNR Background all images'+plot_tag)
 plt.grid()
-plt.savefig('/srv/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/'+Log+log_tag+'/'+out_dir+'fnr_background_bar'+lc+'.png')
+plt.savefig(test_path+'/'+out_dir+'fnr_background_bar'+lc+'.png')
 
 
 #----------------------
@@ -320,7 +334,7 @@ plt.margins(.05)
 plt.subplots_adjust(bottom=0.25)
 plt.title('FNR Tumor all images'+plot_tag)
 plt.grid()
-plt.savefig('/srv/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/'+Log+log_tag+'/'+out_dir+'fnr_tumor_bar'+lc+'.png')
+plt.savefig(test_path+'/'+out_dir+'fnr_tumor_bar'+lc+'.png')
 
 
 #----------------------
@@ -336,7 +350,7 @@ plt.margins(.05)
 plt.subplots_adjust(bottom=0.25)
 plt.title('FPR Background all images'+plot_tag)
 plt.grid()
-plt.savefig('/srv/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/'+Log+log_tag+'/'+out_dir+'fpr_background_bar'+lc+'.png')
+plt.savefig(test_path+'/'+out_dir+'fpr_background_bar'+lc+'.png')
 
 
 #----------------------
@@ -352,7 +366,7 @@ plt.margins(.05)
 plt.subplots_adjust(bottom=0.25)
 plt.title('FPR tumor all images'+plot_tag)
 plt.grid()
-plt.savefig('/srv/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/'+Log+log_tag+'/'+out_dir+'fpr_tumor_bar'+lc+'.png')
+plt.savefig(test_path+'/'+out_dir+'fpr_tumor_bar'+lc+'.png')
 
 
 #----------------------
@@ -368,7 +382,7 @@ plt.margins(.05)
 plt.subplots_adjust(bottom=0.25)
 plt.title('Recall Background all images'+plot_tag)
 plt.grid()
-plt.savefig('/srv/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/'+Log+log_tag+'/'+out_dir+'recall_background_bar'+lc+'.png')
+plt.savefig(test_path+'/'+out_dir+'recall_background_bar'+lc+'.png')
 
 
 #----------------------
@@ -384,7 +398,7 @@ plt.margins(.05)
 plt.subplots_adjust(bottom=0.25)
 plt.title('Recall tumor all images'+plot_tag)
 plt.grid()
-plt.savefig('/srv/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/'+Log+log_tag+'/'+out_dir+'recall_tumor_bar'+lc+'.png')
+plt.savefig(test_path+'/'+out_dir+'recall_tumor_bar'+lc+'.png')
 
 #----------------------
 plt.figure()
@@ -399,4 +413,4 @@ plt.margins(.05)
 plt.subplots_adjust(bottom=0.25)
 plt.title('Recall Average all images'+plot_tag)
 plt.grid()
-plt.savefig('/srv/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/'+Log+log_tag+'/'+out_dir+'recall_average_bar'+lc+'.png')
+plt.savefig(test_path+'/'+out_dir+'recall_average_bar'+lc+'.png')

@@ -16,38 +16,39 @@ def submit_job():
     setting = dict()
     setting['never_generate_image'] = False
 
-    # TF='TF8'
-    TF='TF114'
 
-    net_config = [2,3,4,3,2]#[1,3,5,3,1]
+    TF='TF112'
+
+    net_config = [3,3,5,3,3]#[1,3,5,3,1]#,[1,5,7,5,1]
 
     # OGE
-    setting['cluster_hostname'] = 'res-hpc-gpu02'   # GPU server names: ['res-hpc-gpu01', 'res-hpc-gpu02']
-    setting['cluster_CUDA_VISIBLE_DEVICES'] = 0     # Three GPU are available in our server: 0, 1, 2
-    setting['cluster_queue'] = queue+'.q'           # queue name on our OGE
-    setting['cluster_memory'] = '100G'              # Intended memory in GB
-    setting['cluster_venv'] = '/exports/lkeb-hpc/syousefi/'+TF+'/bin/activate'  # venv path
-    setting['cluster_Cuda'] = True                  # Load Cuda or not
+    # setting['cluster_hostname'] = 'res-hpc-gpu02'   # GPU server names: ['res-hpc-gpu01', 'res-hpc-gpu02']
+    # setting['cluster_CUDA_VISIBLE_DEVICES'] = 0     # Three GPU are available in our server: 0, 1, 2
+    # setting['cluster_queue'] = queue+'.q'           # queue name on our OGE
+    # setting['cluster_memory'] = '100G'              # Intended memory in GB
+    # setting['cluster_venv'] = '/exports/lkeb-hpc/syousefi/Programs/'+TF+'/bin/activate'  # venv path
+    # setting['cluster_Cuda'] = True                  # Load Cuda or not
+ #weak: res-hpc-lkeb04
 
     # Slurm
-    setting['cluster_MemPerCPU'] = 6500   #2200  # 6200
+    setting['cluster_MemPerCPU'] = 7200   #2200  # 6200
     setting['cluster_Partition'] = queue             # 'gpu', 'LKEBgpu'
-    setting['cluster_NodeList'] = 'res-hpc-lkeb05'   # None, LKEBgpu: ['res-hpc-lkeb03', 'res-hpc-lkeb02', 'res-hpc-gpu01', 'res-hpc-lkeb05']
-    setting['cluster_NumberOfCPU'] = 10 #10 #3               # Number of CPU per job
+    setting['cluster_NodeList'] = 'res-hpc-lkeb05'    # None, LKEBgpu: ['res-hpc-lkeb03', 'res-hpc-lkeb02', 'res-hpc-gpu01']
+    setting['cluster_NumberOfCPU'] = 6 #10 #3               # Number of CPU per job
     setting['cluster_where_to_run'] = 'Cluster'      # 'Cluster', 'Auto'
-    setting['cluster_venv_slurm'] = '/exports/lkeb-hpc/syousefi/'+TF+'/bin/activate'  # venv path
+    setting['cluster_venv_slurm'] = '/exports/lkeb-hpc/syousefi/Programs/'+TF+'/bin/activate'  # venv path
 
     if setting['cluster_NodeList'] == 'res-hpc-gpu02':
-        setting['cluster_venv_slurm'] = '/exports/lkeb-hpc/syousefi/'+TF+'/bin/activate'  # venv path
+        setting['cluster_venv_slurm'] = '/exports/lkeb-hpc/syousefi/Programs/'+TF+'/bin/activate'  # venv path
 
     if setting['cluster_NodeList'] == 'res-hpc-lkeb02':
         setting['cluster_MemPerCPU'] = 15000
-    main_script = 'run_attentionnet.py'
+    main_script = '/run_net_distancemap.py'
     folder_script = 'functions'
     # A backup from all files are created. So later if you modify the codes, this does not affect the submitted code.
     backup_script_address, backup_number = backup_script(script_address=os.path.realpath(__file__), main_script=main_script, folder_script  =folder_script,net_config=net_config)
     ext = ''.join(str(net_config[e]) for e in range(len(net_config)))
-    job_name = 'RF'+ext+'_'+str(backup_number)
+    job_name = 'distancemap'+ext+'_'+str(backup_number)
     write_and_submit_job(setting, manager=manager, job_name=job_name, script_address=backup_script_address)
 
 
@@ -104,7 +105,7 @@ def backup_script(script_address, main_script, folder_script, net_config):
     date_now = datetime.datetime.now()
     backup_number = '{:04d}{:02d}{:02d}_{:02d}{:02d}{:02d}'.\
         format(date_now.year, date_now.month, date_now.day, date_now.hour, date_now.minute, date_now.second)
-    backup_root_folder = script_folder + 'CodeCluster_new_data_attention/'+ext+'_1/'
+    backup_root_folder = script_folder + 'CodeCluster_new_data/new'+ext+'_05/'
     backup_folder = backup_root_folder + 'backup-' + str(backup_number) + '/'
     os.makedirs(backup_folder)
     shutil.copy(script_address, backup_folder)

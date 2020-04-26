@@ -37,7 +37,7 @@ class _patch_extractor_thread(threading.Thread):
                         # while len(settings.bunch_GTV_patches)>300:
                         #     print('sleep bunch_GTV_patches:%d', len(settings.bunch_GTV_patches))
                         #     time.sleep(3)
-                        self._image_class.read_patche_online_from_image_bunch(self.sample_no,
+                        self._image_class.read_patche_online_from_image_bunch(self.sample_no*10,
                                                                           self.patch_window,
                                                                           self.GTV_patchs_size,
                                                                           self.tumor_percent,

@@ -13,7 +13,7 @@ def job_script(setting, job_name=None, script_address=None, job_output_file=None
     if setting['cluster_NodeList'] is not None:
         text = text + '#SBATCH --nodelist='+setting['cluster_NodeList']+' \n'
 
-    text = text + 'export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/exports/lkeb-hpc/hsokootioskooyi/Program/cudnn7.4-for-cuda9.0/cuda/lib64/' '\n'
+    text = text + 'export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/exports/lkeb-hpc/syousefi/Programs/cuda9.0/cuda/lib64/' '\n'
     text = text + 'source ' + setting['cluster_venv_slurm'] + '\n'
     # text = text + 'module load cuda9' + '\n'
 

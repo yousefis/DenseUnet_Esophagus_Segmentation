@@ -159,6 +159,28 @@ class _loss_func:
 
         return dice_scores,y_pred,y_true
 
+    def dice_plus_distance_penalize(self, logits, labels,penalize, weighting_flag=0, weighting_type='Square',threshold=.5):
+        n_classes = 2
+        y_pred = tf.reshape(logits, [-1, n_classes])
+        y_true = tf.reshape(labels, [-1, n_classes])
+        y_pred = tf.nn.softmax(y_pred)
+        intersect = tf.reduce_sum(y_pred * y_true, 0)
+
+        # penalized_loss=tf.reduce_sum(tf.math.divide(tf.math.multiply(tf.expand_dims(logits[:,:,:,:,1],-1),penalize),
+        #                                                    tf.cast(tf.shape(logits)[0],tf.float32)))
+        penalized_loss =  tf.math.multiply(tf.expand_dims(logits[:, :, :, :, 1], -1), penalize)
+        penalized_loss = tf.reduce_sum((tf.math.multiply(penalized_loss,penalized_loss)))
+
+        denominator = tf.reduce_sum((y_pred), 0) + tf.reduce_sum(y_true, 0)
+        if weighting_flag:
+            class_weights = self.get_class_weights(labels, weighting_type)
+            dice_scores = 2.0 * tf.reduce_sum(tf.multiply(class_weights, intersect)) / tf.reduce_sum(
+                tf.multiply(class_weights, denominator + self.eps))
+        else:
+            dice_scores = (2.0 * intersect) / (denominator+ self.eps)
+        # loss= penalized_loss+dice_scores
+        return  penalized_loss,dice_scores,y_pred,y_true
+
     def penalize_dice(self, logits, labels, penalize, weighting_flag=0, weighting_type='Square',threshold=.5):
 
         # y_pred_mask = penalize * logits

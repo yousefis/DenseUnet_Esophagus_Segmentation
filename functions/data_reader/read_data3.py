@@ -8,7 +8,7 @@ from os.path import isfile, join
 from random import shuffle
 import matplotlib.pyplot as plt
 
-##Read third DB
+
 class _read_data:
     def __init__(self, data, train_tag='prostate_train/', validation_tag='prostate_validation/',
                  test_tag='prostate_test/',
@@ -38,7 +38,7 @@ class _read_data:
         self.ttag = '_Torso'
         # self.torso_tag = 'CT' + self.ttag + self.resample_tag + '_pad' + str(self.patchsize) + '.mha'
         self.torso_tag = 'CT' + self.ttag + self.resample_tag +  '.mha'
-        self.penalize_tag = 'CT' + self.resample_tag + '_penalize.mha'
+        self.penalize_tag = 'distancemap_'
         self.startwith_4DCT = '4DCT_'
         self.startwith_GTV = 'GTV_'
         self.resampled_path = '/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Data-01/21data1100data2-v3/'
@@ -67,7 +67,7 @@ class _read_data:
                 Torso_path = [join(image_path, pd, dt, f) for f in listdir(join(image_path, pd, dt)) if
                               f.endswith(self.torso_tag)]
                 Penalize_path = [join(image_path, pd, dt, f) for f in listdir(join(image_path, pd, dt)) if
-                                 f.endswith(self.penalize_tag)]
+                                 f.startswith('distancemap_re113_pad87.mha') or  f.startswith('distancemap_CT_re113_pad87.mha')]
                 if (len(GTV_path) == 0):
                     GTV_path = [join(image_path, pd, dt, f) for f in listdir(join(image_path, pd, dt)) if
                                 f.endswith(self.label_name2)]
@@ -83,8 +83,8 @@ class _read_data:
                     Torso_gtv4d = self.startwith_4DCT + percent + self.ttag + self.resample_tag + '.mha'
                     Torso_path.append((str(join(image_path, pd, dt, Torso_gtv4d))))
 
-                    #penalize_gtv4d = self.startwith_4DCT + percent + '_penalize.mha'
-                    Penalize_path=[]#.append((str(join(image_path, pd, dt, penalize_gtv4d))))
+                    penalize_gtv4d = 'distancemap_4DCT_' + percent + '_re113_pad87.mha'
+                    Penalize_path.append((str(join(image_path, pd, dt, penalize_gtv4d))))
 
                 CTs += (CT_path)
                 GTVs += (GTV_path)
@@ -96,6 +96,125 @@ class _read_data:
         Torsos = np.sort(Torsos)
         Penalize = np.sort(Penalize)
         return CTs, GTVs, Torsos, Penalize
+        # =================================================================
+
+    def read_image_seg_penalize_volume(self, CTs, GTVs, Torso, Penalize, img_index, ct_cube_size, gtv_cube_size):
+
+        CT_image1 = sitk.ReadImage(''.join(CTs[int(img_index)]))
+        voxel_size = CT_image1.GetSpacing()
+        origin = CT_image1.GetOrigin()
+        direction = CT_image1.GetDirection()
+
+        #
+        CT_image = (CT_image1)
+
+        GTV_image = sitk.ReadImage(''.join(GTVs[int(img_index)]))
+        #
+
+        Torso_image = sitk.ReadImage(''.join(Torso[int(img_index)]))
+        Penalize_image = sitk.ReadImage(''.join(Penalize[int(img_index)]))
+        #
+
+        padd_zero = 87*2+2 #87 * 2 + 2
+        crop = sitk.CropImageFilter()
+        crop.SetLowerBoundaryCropSize([int(padd_zero / 2) + 1, int(padd_zero / 2) + 1,
+                                       int(padd_zero / 2) + 1])
+        crop.SetUpperBoundaryCropSize([int(padd_zero / 2), int(padd_zero / 2), int(padd_zero / 2)])
+        CT_image = crop.Execute(CT_image)
+        GTV_image = crop.Execute(GTV_image)
+        Torso_image = crop.Execute(Torso_image)
+        Penalize_image = crop.Execute(Penalize_image)
+
+        # padd:
+        gtv = sitk.GetArrayFromImage(GTV_image)
+        one = np.where(gtv)
+        c_x = int((np.min(one[0]) + np.max(one[0])) / 2)
+        c_y = int((np.min(one[1]) + np.max(one[1])) / 2)
+        c_z = int((np.min(one[2]) + np.max(one[2])) / 2)
+
+        if c_x - int(ct_cube_size / 2) < 0:
+            xp1 = np.abs(c_x - int(ct_cube_size / 2))
+        else:
+            xp1 = int(ct_cube_size) - (c_x - int(2 * c_x / ct_cube_size) * int(ct_cube_size / 2))
+        if c_x + int(ct_cube_size / 2) > np.shape(gtv)[0]:
+            xp2 = int(ct_cube_size / 2) - (np.abs(np.shape(gtv)[0] - c_x))
+        else:
+            xp2 = int(ct_cube_size) - \
+                  ((np.shape(gtv)[0] - c_x) -
+                   int(2 * (np.shape(gtv)[0] - c_x) / ct_cube_size) * int(ct_cube_size / 2))
+
+        if c_y - int(ct_cube_size / 2) < 0:
+            yp1 = np.abs(c_y - int(ct_cube_size / 2))
+        else:
+            yp1 = ct_cube_size - (
+                    (c_y - int(ct_cube_size / 2)) - (
+                        int((c_y - int(ct_cube_size / 2)) / int(ct_cube_size)) * ct_cube_size))
+        if c_y + int(ct_cube_size / 2) > np.shape(gtv)[1]:
+            yp2 = np.abs((np.shape(gtv)[1] - c_y) - int(ct_cube_size / 2))
+        else:
+            yp2 = ct_cube_size - ((np.shape(gtv)[1] - (c_y + int(ct_cube_size / 2))) -
+                                  np.floor(
+                                      (np.shape(gtv)[1] - (c_y + int(ct_cube_size / 2))) / ct_cube_size) * ct_cube_size)
+
+        if c_z - int(ct_cube_size / 2) < 0:
+            zp1 = np.abs(c_z - int(ct_cube_size / 2))
+        else:
+            zp1 = ct_cube_size - (
+                    (c_z - int(ct_cube_size / 2)) - (
+                        int((c_z - int(ct_cube_size / 2)) / int(ct_cube_size)) * ct_cube_size))
+        if c_z + int(ct_cube_size / 2) > np.shape(gtv)[2]:
+            zp2 = np.abs((np.shape(gtv)[2] - c_z) - int(ct_cube_size / 2))
+        else:
+            zp2 = ct_cube_size - ((np.shape(gtv)[2] - (c_z + int(ct_cube_size / 2))) -
+                                  np.floor(
+                                      (np.shape(gtv)[2] - (c_z + int(ct_cube_size / 2))) / ct_cube_size) * ct_cube_size)
+
+        CT_image = self.image_padding(img=CT_image,
+                                      padLowerBound=[int(yp1 + 1), int(zp1 + 1), int(xp1 + 1)],
+                                      padUpperBound=[int(yp2), int(zp2), int(xp2)],
+                                      constant=-1024)
+        GTV_image = self.image_padding(img=GTV_image,
+                                       padLowerBound=[int(yp1 + 1), int(zp1 + 1), int(xp1 + 1)],
+                                       padUpperBound=[int(yp2), int(zp2), int(xp2)],
+                                       constant=0)
+        Torso_image = self.image_padding(img=Torso_image,
+                                         padLowerBound=[int(yp1 + 1), int(zp1 + 1), int(xp1 + 1)],
+                                         padUpperBound=[int(yp2), int(zp2), int(xp2)],
+                                         constant=0)
+        Penalize_image = self.image_padding(img=Penalize_image,
+                                            padLowerBound=[int(yp1 + 1), int(zp1 + 1), int(xp1 + 1)],
+                                            padUpperBound=[int(yp2), int(zp2), int(xp2)],
+                                            constant=0)
+        # ----------------------------------------
+        ct = sitk.GetArrayFromImage(CT_image)
+        gtv1 = sitk.GetArrayFromImage(GTV_image)
+        # Torso_image = sitk.GetArrayFromImage(Torso_image)
+        c = 0
+        gap = ct_cube_size - gtv_cube_size
+
+        for _z in (
+                range(int(ct_cube_size / 2) + 1, ct.shape[0] - int(ct_cube_size / 2) + 7,
+                      int(ct_cube_size) - int(gap) + 1)):
+            for _x in (range(int(ct_cube_size / 2) + 1, ct.shape[1] - int(ct_cube_size / 2) + 7,
+                             int(ct_cube_size) - int(gap) + 1)):
+                for _y in (range(int(ct_cube_size / 2) + 1, ct.shape[2] - int(ct_cube_size / 2) + 7,
+                                 int(ct_cube_size) - int(gap) + 1)):
+                    gtv = gtv1[_z - int(gtv_cube_size / 2) - 1:_z + int(gtv_cube_size / 2),
+                          _x - int(gtv_cube_size / 2) - 1:_x + int(gtv_cube_size / 2),
+                          _y - int(gtv_cube_size / 2) - 1:_y + int(gtv_cube_size / 2)]
+                    if len(np.where(gtv[:, :, :] != 0)[0]):
+                        print(len(np.where(gtv[:, :, :] != 0)[0]))
+                        c = c + 1
+        if c != 1:
+            print('hhhhhhhhhhhhhhhhhhhhhhh')
+        # ----------------------------------------
+
+        CT_image = sitk.GetArrayFromImage(CT_image)
+        GTV_image = sitk.GetArrayFromImage(GTV_image)
+        Torso_image = sitk.GetArrayFromImage(Torso_image)
+        Penalize_image = sitk.GetArrayFromImage(Penalize_image)
+
+        return CT_image, GTV_image, Torso_image, Penalize_image, GTV_image.shape[0], voxel_size, origin, direction
 
     # ========================
     def read_data_path(self, fold):  # join(self.resampled_path, f)
@@ -417,7 +536,7 @@ class _read_data:
         direction = CT_image1.GetDirection()
 
         #
-        CT_image = (CT_image1)
+        CT_image = (CT_image1)  # /CT_image.mean()
 
         GTV_image = sitk.ReadImage(''.join(GTVs[int(img_index)]))
         #

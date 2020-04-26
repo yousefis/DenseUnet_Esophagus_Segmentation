@@ -217,6 +217,7 @@ class _densenet_unet:
         bn1 = tf.layers.batch_normalization(conv0, training=is_training_bn,renorm=False)
         bn1 = tf.nn.leaky_relu(bn1)
 
+
         conv1 = tf.layers.conv3d(inputs=bn1, filters=8, kernel_size=3,
                                  padding='same',
                                  activation=None,
@@ -224,19 +225,27 @@ class _densenet_unet:
                                  dilation_rate=(1, 1, 1))
         bn2 = tf.layers.batch_normalization(conv1, training=is_training_bn,renorm=False)
         bn2 = tf.nn.leaky_relu(bn2)
-        conv2 = tf.layers.conv3d(inputs=bn2, filters=8, kernel_size=3,
+        # conv2 = tf.layers.conv3d(inputs=bn2, filters=8, kernel_size=3,
+        #                          padding='same',
+        #                          activation=None,
+        #                          name='conv_deconv_000' + self.log_ext,
+        #                          dilation_rate=(1, 1, 1))
+        # bn3 = tf.layers.batch_normalization(conv2, training=is_training_bn, renorm=False)
+        # bn3 = tf.nn.leaky_relu(bn3)
+
+        bn3= tf.concat([bn1, bn2], 4)
+        conv2 = tf.layers.conv3d(inputs=bn3, filters=int(bn3.shape[4].value* 0.75), kernel_size=1,
                                  padding='same',
                                  activation=None,
                                  name='conv_deconv_000' + self.log_ext,
                                  dilation_rate=(1, 1, 1))
-        bn3 = tf.layers.batch_normalization(conv2, training=is_training_bn, renorm=False)
-        bn3 = tf.nn.leaky_relu(bn3)
-
-        bn3= tf.concat([noisy_img, bn3], 4)
+        bn4 = tf.layers.batch_normalization(conv2, training=is_training_bn, renorm=False)
+        bn4 = tf.nn.leaky_relu(bn4)
+        bn4 = tf.concat([noisy_img, bn4], 4)
 
 
         [dense_out1, conc1] = self.dense_loop(loop=self.config[0],
-                                              input=bn3,
+                                              input=bn4,
                                               crop_size=crop_size2,
                                               db_size=db_size1,
                                               padding='same',
@@ -342,7 +351,7 @@ class _densenet_unet:
 
         conv2 = tf.layers.conv3d(inputs=dense_out5,
                                  filters=int(dense_out5.shape[4].value/2),
-                                 kernel_size=[3, 3, 3],
+                                 kernel_size=3,
                                  padding='valid',
                                  activation=None,
                                  name='conv_deconv_2'+self.log_ext,
@@ -369,7 +378,7 @@ class _densenet_unet:
 
         conv3 = tf.layers.conv3d(inputs=dense_out6,
                                  filters=int(dense_out6.shape[4].value / 2),
-                                 kernel_size=[3, 3, 3],
+                                 kernel_size=3,
                                  padding='valid',
                                  activation=None,
                                  name='conv_deconv_tmp' + self.log_ext,

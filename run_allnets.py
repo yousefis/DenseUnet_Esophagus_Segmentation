@@ -32,7 +32,7 @@ date_time = now.strftime("%m%d%Y_%H")
 
 dc12=dense_classify( data=2,
                      # densnet_unet_config=[1,3,5,3,1],
-                     densnet_unet_config=[2,3,4,3,2],
+                     densnet_unet_config=[1,5,7,5,1],
                      compression_coefficient=.75,
                      sample_no=2000000,
                      validation_samples=1980,

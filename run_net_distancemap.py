@@ -1,15 +1,21 @@
-from functions.call_attention_net import dense_classify
+
+from datetime import datetime
+from functions.Segmentation.densenet_seg import dense_seg
 import numpy as np
 import tensorflow as tf
 
 # tf.disable_v2_behavior()
 import os
-#Training only on the second dataset
+
+
+
+
+# just use dice without distance map penalizing
 fold=0
 np.random.seed(1)
 tf.set_random_seed(1)
 
-Logs= 'Log_2019_09_23/large_receptivefield/'
+Logs= 'Log_2019_09_23/Dataset3/'
 server_path='/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/'
 mixed_precision=True
 # if mixed_precision ==True:
@@ -25,9 +31,12 @@ GPU= tf.test.is_gpu_available(
 #     print('Check: no GPU available! ')
 #     exit(1)
 
-dc12=dense_classify( data=2,
+now = datetime.now() # current date and time
+date_time = now.strftime("%m%d%Y_%H")
+
+dc12=dense_seg( data=2,
                      # densnet_unet_config=[1,3,5,3,1],
-                     densnet_unet_config=[2,3,4,3,2],
+                     densnet_unet_config=[3,3,5,3,3],
                      compression_coefficient=.75,
                      sample_no=2000000,
                      validation_samples=1980,
@@ -36,7 +45,7 @@ dc12=dense_classify( data=2,
                      validation_tag='',
                      test_tag='',
                      img_name='',label_name='', torso_tag='',
-                     log_tag='-cross-noRand-train1-'+str(fold),
+                     log_tag='-train1-'+date_time+str(fold),
                      tumor_percent=.75,
                      other_percent=.25,
                      Logs=Logs,
