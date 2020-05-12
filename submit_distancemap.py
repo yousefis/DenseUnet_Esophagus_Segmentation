@@ -31,10 +31,10 @@ def submit_job():
  #weak: res-hpc-lkeb04
 
     # Slurm
-    setting['cluster_MemPerCPU'] = 7200   #2200  # 6200
+    setting['cluster_MemPerCPU'] = 6200   #2200  # 6200
     setting['cluster_Partition'] = queue             # 'gpu', 'LKEBgpu'
     setting['cluster_NodeList'] = 'res-hpc-lkeb05'    # None, LKEBgpu: ['res-hpc-lkeb03', 'res-hpc-lkeb02', 'res-hpc-gpu01']
-    setting['cluster_NumberOfCPU'] = 6 #10 #3               # Number of CPU per job
+    setting['cluster_NumberOfCPU'] = 7#10 #3               # Number of CPU per job
     setting['cluster_where_to_run'] = 'Cluster'      # 'Cluster', 'Auto'
     setting['cluster_venv_slurm'] = '/exports/lkeb-hpc/syousefi/Programs/'+TF+'/bin/activate'  # venv path
 
@@ -105,7 +105,7 @@ def backup_script(script_address, main_script, folder_script, net_config):
     date_now = datetime.datetime.now()
     backup_number = '{:04d}{:02d}{:02d}_{:02d}{:02d}{:02d}'.\
         format(date_now.year, date_now.month, date_now.day, date_now.hour, date_now.minute, date_now.second)
-    backup_root_folder = script_folder + 'CodeCluster_new_data/new'+ext+'_05/'
+    backup_root_folder = script_folder + 'CodeCluster_new_data/new'+ext+'_07_coeff100/'
     backup_folder = backup_root_folder + 'backup-' + str(backup_number) + '/'
     os.makedirs(backup_folder)
     shutil.copy(script_address, backup_folder)

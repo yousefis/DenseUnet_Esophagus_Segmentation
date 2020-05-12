@@ -11,9 +11,9 @@ import logging
 # import wandb
 # from functions.read_data import _read_data
 from functions.data_reader.read_data3 import _read_data
-from functions.read_thread import read_thread
-from functions.image_class_penalize import image_class
-from functions.fill_thread import fill_thread
+from functions.threads.read_thread_smart_sampling import read_thread
+from functions.image_classes.image_class_smart_sampling import image_class
+from functions.threads.fill_thread_smart_sampling import fill_thread
 import functions.settings as settings
 from functions.loss_func import _loss_func
 import psutil
@@ -276,13 +276,16 @@ class dense_seg:
             copyfile('./test_densenet_unet.py', self.LOGDIR + 'test_densenet_unet.py')
             copyfile('./test_job.sh', self.LOGDIR + 'test_job.sh')
             copyfile('./test_network_newdata.py', self.LOGDIR + 'test_network_newdata.py')
+            copyfile('./densenet_seg2.py', self.LOGDIR + 'densenet_seg2.py')
+            copyfile('./test_distancemap_10dice.py', self.LOGDIR + 'test_distancemap_10dice.py')
+
         except:
             print('File exists?')
 
 
         '''AdamOptimizer:'''
         with tf.name_scope('cost'):
-            penalize_weight=.01
+            penalize_weight=1
             [ penalized_loss,
              soft_dice_coef,logt,lbl]=self.loss_instance.dice_plus_distance_penalize(logits=y, labels=label,penalize=penalize)
             cost = tf.reduce_mean((1.0 - soft_dice_coef[1])+penalize_weight*penalized_loss, name="cost")

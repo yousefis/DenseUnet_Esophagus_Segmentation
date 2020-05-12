@@ -28,12 +28,14 @@ if vali==1:
     out_dir = 'result_vali/'
 else:
     out_dir = 'result/'
-    out_dir = 'result2/'
+    # out_dir = 'result2/'
 test_path='/srv/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/Log_2018-08-15/00_Seperate_training_2nddataset/13331_0.75_4-cross-noRand-train2test2--8/'
 test_path='/srv/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/Log_2018-08-15/00_Seperate_training_1stdataset/13331_0.75_4-cross-noRand-train1-107/'
 test_path='/srv/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/Log_2018-08-15/cross_validation/13331_0.75_4-cross-NoRand-tumor25-004/'
 test_path='/srv/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/Log_2018-08-15/00_Seperate_training_2nddataset/13331_0.75_4-cross-noRand-train2test2--6/'
 test_path='/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/Log_2019_09_23/Dataset3/33533_0.75_4-train1-04172020_140/'
+test_path='/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/Log_2019_09_23/Dataset3/33533_0.75_4-train1-04252020_220/'
+# test_path='/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/Log_2019_09_23/Dataset3/33533_0.75_4-train1-04302020_090/'
 # test_path='/srv/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/Log_2018-08-15/00_Seperate_training_1stdataset/13331_0.75_4-cross-noRand-train1-104/'
 eps=10e-6
 def surfd(input1, input2, sampling=1, connectivity=1):
@@ -42,8 +44,8 @@ def surfd(input1, input2, sampling=1, connectivity=1):
 
     conn = morphology.generate_binary_structure(input_1.ndim, connectivity)
 
-    S = input_1 - morphology.binary_erosion(input_1, conn)
-    Sprime = input_2 - morphology.binary_erosion(input_2, conn)
+    S = (input_1.astype(np.int)) - (morphology.binary_erosion(input_1, conn).astype(np.int))
+    Sprime = input_2.astype(np.int) - morphology.binary_erosion(input_2, conn).astype(np.int)
 
     dta = morphology.distance_transform_edt(~S, sampling)
     dtb = morphology.distance_transform_edt(~Sprime, sampling)
@@ -97,8 +99,8 @@ def f1_measure(TP,TN,FP,FN):
 
 result=read_names()
 result=np.sort(result)
-# result_lc=read_names('_result_lc.mha')
-# result_lc=np.sort(result_lc)
+result_lc=read_names('_result_lc.mha')
+result_lc=np.sort(result_lc)
 Gtv=read_names('_gtv.mha')
 Gtv=np.sort(Gtv)
 dsc_res=[]
@@ -184,50 +186,52 @@ def overlapped_component(predicted_image_path,overlapped_name) :
     sitk.WriteImage(outImg, overlapped_name)
     return  sitk.GetArrayFromImage(outImg)
 def compute_tp_tn_fp_fn(result,Gtv,
-                        # lc_name,overlapped_name result_lc,
+                        overlapped_name ,result_lc,
                         ):
-# for i in range(len(result)):#
-#     get_largest_component(result,lc_name)
+
     res = sitk.GetArrayFromImage(sitk.ReadImage(result))
-    # res_lc = sitk.GetArrayFromImage(sitk.ReadImage(result_lc))
+    res_lc = sitk.GetArrayFromImage(sitk.ReadImage(result_lc))
     gtv = sitk.GetArrayFromImage(sitk.ReadImage(Gtv))
 
-    # overlapped=overlapped_component(result,overlapped_name)
+    overlapped=sitk.GetArrayFromImage(sitk.ReadImage(overlapped_name))
 
 
-    if len(np.where(gtv)[0]) == 0 :#or len(np.where(overlapped)[0]) == 0:
+    if len(np.where(gtv)[0]) == 0 or len(np.where(overlapped)[0]) == 0:
         x = np.array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
     else:
-        # top_prep_dis=max(np.where(gtv)[0])-max(np.where(overlapped)[0])
-        # bottom_prep_dis=min(np.where(gtv)[0])-min(np.where(overlapped)[0])
+        top_prep_dis=max(np.where(gtv)[0])-max(np.where(overlapped)[0])
+        bottom_prep_dis=min(np.where(gtv)[0])-min(np.where(overlapped)[0])
 
 
 
         [TP, TN, FP, FN] = tp_tn_fp_fn(res, gtv)
         f1 = f1_measure(TP, TN, FP, FN)
-        # dsc_res.append(f1[0])
-
-        # [TP, TN, FP, FN] = tp_tn_fp_fn(res_lc, gtv)
-        # f1_lc = f1_measure(TP, TN, FP, FN)
 
 
-        # top_prep_dis_lc=max(np.where(gtv)[0])-max(np.where(overlapped)[0])
-        # bottom_prep_dis_lc=min(np.where(gtv)[0])-min(np.where(overlapped)[0])
 
-        # srfd = surfd(res, gtv, [3, 1, 1])
-        # msd = srfd.mean()
-        # hd = srfd.max()
-        # rms = np.sqrt((srfd ** 2).mean())
+        dsc_res.append(f1[0])
 
-        # dsc_res_lc.append(f1_lc[0])
+        [TP, TN, FP, FN] = tp_tn_fp_fn(res_lc, gtv)
+        f1_lc = f1_measure(TP, TN, FP, FN)
+
+
+        top_prep_dis_lc=max(np.where(gtv)[0])-max(np.where(overlapped)[0])
+        bottom_prep_dis_lc=min(np.where(gtv)[0])-min(np.where(overlapped)[0])
+
+        srfd = surfd(res_lc, gtv, [3, 1, 1])
+        msd = srfd.mean()
+        hd = srfd.max()
+        rms = np.sqrt((srfd ** 2).mean())
+
+        dsc_res_lc.append(f1_lc[0])
         x=np.array([TP[0],TP[1],
                     TN[0],
                     TN[1], FP[0],
                     FP[1], FN[0],
-                    FN[1],f1[0],#f1_lc[0],
-                   # top_prep_dis,bottom_prep_dis,
-                   #  top_prep_dis_lc,bottom_prep_dis_lc,
-                   #  msd,hd,rms
+                    FN[1],f1[0],f1_lc[0],
+                    top_prep_dis,bottom_prep_dis,
+                    top_prep_dis_lc,bottom_prep_dis_lc,
+                    msd,hd,rms
                     ])
     # if not len(dsc):
     #     dsc=x
@@ -245,13 +249,36 @@ def compute_tp_tn_fp_fn(result,Gtv,
 import multiprocessing
 from joblib import Parallel, delayed
 
-num_cores =  multiprocessing.cpu_count()
+num_cores =  10#multiprocessing.cpu_count()
+print('===============================')
+print('===============================')
+print('num_cores:')
+print(num_cores)
+print('===============================')
+print('===============================')
+
+# Parallel(n_jobs=num_cores)(
+#         delayed(get_largest_component)(predicted_image_path=result[i],
+#                                        out_image_name=result[i].split('_result.mha')[0]+'_result_lc.mha',
+#                                      )
+#         for i in range(len(result)))#
+# print('end get_largest_component')
+print('===============================')
+print('===============================')
+
+# Parallel(n_jobs=num_cores)(
+#         delayed(overlapped_component)(predicted_image_path=result[i],
+#                                       overlapped_name=result[i].split('_result.mha')[0]+'_result_ov.mha'
+#                                      )
+#         for i in range(len(result)))#
+# print('end overlapped_component')
+print('===============================')
+print('===============================')
 res=Parallel(n_jobs=num_cores)(
         delayed(compute_tp_tn_fp_fn)(result=result[i],
-                                     # result_lc=result_lc[i],
+                                     result_lc=result[i].split('_result.mha')[0]+'_result_lc.mha',
                                      Gtv=Gtv[i],
-                                     # lc_name='',#result[i].split('_result.mha')[0]+'_result_lc.mha',
-                                     # overlapped_name=result[i].split('_result.mha')[0]+'_result_ov.mha'
+                                     overlapped_name=result[i].split('_result.mha')[0]+'_result_ov.mha'
                                      )
         for i in range(len(result)))#
 
@@ -279,16 +306,16 @@ df = pd.DataFrame(dsc,
                                     'TN_tumor','TN_back',
                                    'FP_tumor', 'FP_back',
                                    'FN_tumor', 'FN_back',
-                                   'DCS-LC', #'DCS+LC',
-                                   # 'top_prep_dis','bottom_prep_dis',
-                                   # 'top_prep_dis_lc', 'bottom_prep_dis_lc',
-                                   # 'msd','hd','rms'
+                                   'DCS-LC', 'DCS+LC',
+                                   'top_prep_dis','bottom_prep_dis',
+                                   'top_prep_dis_lc', 'bottom_prep_dis_lc',
+                                   'msd','hd','rms'
                                    ],
                  name='Genus')).round(2)
 
 
 # Create a Pandas Excel writer using XlsxWriter as the engine.
-writer = pd.ExcelWriter(test_path+out_dir+'/all_dice.xlsx',
+writer = pd.ExcelWriter(test_path+out_dir+'/all_dice2.xlsx',
                         engine='xlsxwriter')
 
 # Convert the dataframe to an XlsxWriter Excel object.

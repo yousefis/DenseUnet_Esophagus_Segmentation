@@ -1,3 +1,4 @@
+import pandas as pd
 #this is ok
 import xlwt
 from shutil import copyfile
@@ -310,7 +311,7 @@ def test_all_nets(fold,out_dir,Log):
 
 
 
-    for img_indx in range(108,len(test_CTs)):
+    for img_indx in range(len(test_CTs)):
         print('img_indx:%s' %(img_indx))
         ss = str(test_CTs[img_indx]).split("/")
         name = ss[10] + '_' + ss[11]
@@ -478,6 +479,26 @@ def test_all_nets(fold,out_dir,Log):
         # output(filename, sheet, list1, list2, x, y, z)
         # output('/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/'+Log+out_dir +'file.xls','sheet 1',fnr,fpr,'a','b','c')
         print('end')
+
+    # df = pd.DataFrame(dsc,
+    #                   index=name_list,
+    #                   columns=pd.Index(['TP_tumor', 'TP_back',
+    #                                     'TN_tumor', 'TN_back',
+    #                                     'FP_tumor', 'FP_back',
+    #                                     'FN_tumor', 'FN_back',
+    #                                     'DCS-LC',
+    #                                     ],
+    #                                    name='Genus')).round(2)
+    #
+    # # Create a Pandas Excel writer using XlsxWriter as the engine.
+    # writer = pd.ExcelWriter('/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/'+Log+out_dir+'/all_dice.xlsx',
+    #                         engine='xlsxwriter')
+    #
+    # # Convert the dataframe to an XlsxWriter Excel object.
+    # df.to_excel(writer, sheet_name='Sheet1')
+    #
+    # # Close the Pandas Excel writer and output the Excel file.
+    # writer.save()
 
     f1_bp0 = []
     f1_bp1 = []
@@ -722,7 +743,11 @@ if __name__ == "__main__":
 
 
     # Log = '/Log_2019_09_23/Dataset3/23432_0.75_4-train1-03232020_140/'
-    Log = '/Log_2019_09_23/Dataset3/33533_0.75_4-train1-04172020_140/'
+    Log = '/Log_2019_09_23/Dataset3/33533_0.75_4-train1-04172020_140/' #10*dice+distance map
+    Log = '/Log_2019_09_23/Dataset3/33533_0.75_4-train1-04252020_220/' #dice+distancemap
+    Log = '/Log_2019_09_23/Dataset3/33533_0.75_4-train1-04302020_090/' #dice+distancemap
+    Log = '/Log_2019_09_23/Dataset3/33533_0.75_4-train1-05042020_120/' #dice+distancemap
+    Log = '/Log_2019_09_23/Dataset3/33533_0.75_4-train1-05082020_090/' #dice+distancemap
 
 
 
@@ -737,5 +762,5 @@ if __name__ == "__main__":
         if test_vali == 1:
             out_dir = log_tag + '/result_vali/'
         else:
-            out_dir = log_tag + '/result2/'
+            out_dir = log_tag + '/result/'
         test_all_nets(fold, out_dir, Log)
