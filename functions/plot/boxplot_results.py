@@ -193,6 +193,10 @@ def compute_tp_tn_fp_fn(result,Gtv,
     res_lc = sitk.GetArrayFromImage(sitk.ReadImage(result_lc))
     gtv = sitk.GetArrayFromImage(sitk.ReadImage(Gtv))
 
+    hausdorff_distance_image_filter = sitk.HausdorffDistanceImageFilter()
+    hausdorff_distance_image_filter.Execute(gtv, res)
+    hausdorff_distance_image_filter.Execute(gtv, res)
+
     overlapped=sitk.GetArrayFromImage(sitk.ReadImage(overlapped_name))
 
 
