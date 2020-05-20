@@ -2,7 +2,7 @@ import SimpleITK as sitk
 import math
 import numpy as np
 
-def resampler_sitk(image_sitk, spacing=[1.0, 1.0, 2.0], default_pixel_value=0,
+def resampler_sitk(image_sitk, spacing=[1.0, 1.0, 3.0], default_pixel_value=0,
                    interpolator=sitk.sitkNearestNeighbor, dimension=3, rnd=3):
     ratio = [spacing_dim / spacing[i] for i, spacing_dim in enumerate(image_sitk.GetSpacing())]
     ImRef = sitk.Image(tuple(math.ceil(size_dim * ratio[i]) for i, size_dim in enumerate(image_sitk.GetSize())),
@@ -20,7 +20,7 @@ def resampler_sitk(image_sitk, spacing=[1.0, 1.0, 2.0], default_pixel_value=0,
 
     return resampled_sitk
 
-def DSC_MSD_HD95(groundtruth_image_itk, predicted_image, resample_flag=True, resample_spacing=[1.0, 1.0, 2.0]):
+def DSC_MSD_HD95(groundtruth_image_itk, predicted_image, resample_flag=False, resample_spacing=[1.0, 1.0, 3.0]):
 
     if resample_flag:
         groundtruth_image_itk = resampler_sitk(image_sitk=groundtruth_image_itk, spacing=resample_spacing,
@@ -51,14 +51,21 @@ def DSC_MSD_HD95(groundtruth_image_itk, predicted_image, resample_flag=True, res
         pass
 
     label_overlap_measures_filter = sitk.LabelOverlapMeasuresImageFilter()
-    label_overlap_measures_filter.Execute(groundtruth_image_itk, predicted_image)
+    try:
+        label_overlap_measures_filter.Execute(groundtruth_image_itk, predicted_image)
 
-    dice = label_overlap_measures_filter.GetDiceCoefficient()
-    jaccard = label_overlap_measures_filter.GetJaccardCoefficient()
-    vol_similarity = label_overlap_measures_filter.GetVolumeSimilarity()
-
-    hausdorff_distance_image_filter = sitk.HausdorffDistanceImageFilter()
-    hausdorff_distance_image_filter.Execute(groundtruth_image_itk, predicted_image)
+        dice = label_overlap_measures_filter.GetDiceCoefficient()
+        jaccard = label_overlap_measures_filter.GetJaccardCoefficient()
+        vol_similarity = label_overlap_measures_filter.GetVolumeSimilarity()
+    except:
+        dice =-1
+        jaccard =-1
+        vol_similarity =-1
+    try:
+        hausdorff_distance_image_filter = sitk.HausdorffDistanceImageFilter()
+        hausdorff_distance_image_filter.Execute(groundtruth_image_itk, predicted_image)
+    except:
+        return -1, -1, -1, -1, -1
 
     reference_distance_map = sitk.Abs(
         sitk.SignedMaurerDistanceMap(groundtruth_image_itk, squaredDistance=False, useImageSpacing=True))

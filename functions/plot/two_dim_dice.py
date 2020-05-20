@@ -176,65 +176,44 @@ def compute_tp_tn_fp_fn(result,Gtv,
     sitk_gtv=sitk.ReadImage(Gtv)
     gtv = sitk.GetArrayFromImage(sitk_gtv)
 
-    dice, msd, hd_percentile, jaccard, vol_similarity= DSC_MSD_HD95(sitk_gtv,sitk_res)
-    dice_lc, msd_lc, hd_percentile_lc, jaccard_lc, vol_similarity_lc= DSC_MSD_HD95(sitk_gtv,sitk_res_lc)
-
-    # hausdorff_distance_image_filter = sitk.HausdorffDistanceImageFilter()
-    # hausdorff_distance_image_filter.Execute(gtv, res)
-    # hausdorff_distance_image_filter.Execute(gtv, res)
-
-    overlapped=sitk.GetArrayFromImage(sitk.ReadImage(overlapped_name))
+    gtv_ones=np.unique(np.where(gtv)[0])
+    res_ones=np.unique(np.where(res)[0])
+    res_lc_ones=np.unique(np.where(res_lc)[0])
 
 
-    if len(np.where(gtv)[0]) == 0 or len(np.where(overlapped)[0]) == 0:
-        x = np.array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
-    else:
-        top_prep_dis=max(np.where(gtv)[0])-max(np.where(overlapped)[0])
-        bottom_prep_dis=min(np.where(gtv)[0])-min(np.where(overlapped)[0])
-
-
-
-        [TP, TN, FP, FN] = tp_tn_fp_fn(res, gtv)
+    union_gtv_res = list(set(gtv_ones) | set(res_ones))
+    union_gtv_lc_res = list(set(res_lc_ones) | set(res_ones))
+    for union in union_gtv_res:
+        [TP, TN, FP, FN] = tp_tn_fp_fn(res[union,:,:], gtv[union,:,:])
         f1 = f1_measure(TP, TN, FP, FN)
+        x = np.array([TP[0], TP[1],
+                      TN[0], TN[1],
+                      FP[0], FP[1],
+                      FN[0], FN[1],
+                      f1[0],
+                      ])
+        dsc_res.append(x)
+    for union in union_gtv_lc_res:
+        [TP_lc, TN_lc, FP_lc, FN_lc] = tp_tn_fp_fn(res_lc[union,:,:], gtv[union,:,:])
+        f1_lc = f1_measure(TP_lc, TN_lc, FP_lc, FN_lc)
+
+        x_lc = np.array([
+                      TP_lc[0], TP_lc[1],
+                      TN_lc[0], TN_lc[1],
+                      FP_lc[0], FP_lc[1],
+                      FN_lc[0], FN_lc[1],
+                       f1_lc[0],
+                      ])
+        dsc_res_lc.append(x_lc)
 
 
 
-        dsc_res.append(f1[0])
-
-        [TP, TN, FP, FN] = tp_tn_fp_fn(res_lc, gtv)
-        f1_lc = f1_measure(TP, TN, FP, FN)
-
-
-        top_prep_dis_lc=max(np.where(gtv)[0])-max(np.where(overlapped)[0])
-        bottom_prep_dis_lc=min(np.where(gtv)[0])-min(np.where(overlapped)[0])
-
-        # srfd = surfd(res_lc, gtv, [3, 1, 1])
-        # msd = srfd.mean()
-        # hd = srfd.max()
-        # rms = np.sqrt((srfd ** 2).mean())
-
-        dsc_res_lc.append(f1_lc[0])
-        x=np.array([TP[0],TP[1],
-                    TN[0],
-                    TN[1], FP[0],
-                    FP[1], FN[0],
-                    FN[1],f1[0],f1_lc[0],
-                    top_prep_dis,bottom_prep_dis,
-                    top_prep_dis_lc,bottom_prep_dis_lc,
-                    jaccard, msd, hd_percentile,
-                    jaccard_lc,msd_lc,hd_percentile_lc
-                    ])
-    # if not len(dsc):
-    #     dsc=x
-    # else:
-    #     dsc=np.vstack((dsc,x))
-    # name_list.append(result[i].split('/')[-1].split('_result.mha')[0])
 
 
         # print('hd:%f,msd:%f' % (hd, msd))
-        print('%s: f1:%f ' % (result.split('/')[-1], f1[0]
+    print('%s: f1:%f ' % (result.split('/')[-1], f1[0]
                                     ))
-    return result.split('/')[-1].split('_result.mha')[0],x
+    return result.split('/')[-1].split('_result.mha')[0],dsc_res,dsc_res_lc
 
 
 
@@ -251,7 +230,7 @@ if __name__=='__main__':
     dsc=[]
     name_list=[]
 
-    num_cores =  6#multiprocessing.cpu_count()
+    num_cores =  10#multiprocessing.cpu_count()
     print('===============================')
     print('===============================')
     print('num_cores:')
@@ -285,44 +264,57 @@ if __name__=='__main__':
             for i in range(len(result)))#
 
     dsc=[]
+    dsc_lc=[]
     name_list=[]
+    name_list_lc=[]
     tp_list=[]
     tn_list=[]
     fp_list=[]
     fn_list=[]
     for i in range(len(res)):
-        if np.sum(res[i][1])==0:
-            continue
-        name_list.append(res[i][0])
-        if not len(dsc):
-            dsc=res[i][1]
-        else:
-            dsc=np.vstack((dsc,res[i][1]))
+        for j in range(len(res[i][1])):
+            name_list.append(res[i][0])
+            if not len(dsc):
+                dsc=res[i][1][j]
+            else:
+                dsc=np.vstack((dsc,res[i][1][j]))
 
-
+        for j in range(len(res[i][2])):
+            name_list_lc.append(res[i][0])
+            if not len(dsc_lc):
+                dsc_lc=res[i][2][j]
+            else:
+                dsc_lc=np.vstack((dsc_lc,res[i][2][j]))
     # Create a Pandas dataframe from some data.
 
     df = pd.DataFrame(dsc,
                      index=name_list,
-                     columns=pd.Index(['TP_tumor','TP_back',
-                                        'TN_tumor','TN_back',
-                                       'FP_tumor', 'FP_back',
-                                       'FN_tumor', 'FN_back',
-                                       'DCS-LC', 'DCS+LC',
-                                       'top_prep_dis','bottom_prep_dis',
-                                       'top_prep_dis_lc', 'bottom_prep_dis_lc',
-                                       'jaccard','msd','95hd',
-                                       'jaccard_lc','msd_lc','95hd_lc'
+                     columns=pd.Index(['TP','TP',
+                                       'TN','TN',
+                                       'FP','FP',
+                                       'FN','FN',
+                                       'f1'
                                        ],
                      name='Genus')).round(2)
 
+    df2 = pd.DataFrame(dsc_lc,
+                      index=name_list_lc,
+                      columns=pd.Index(['TP_lc', 'TP_lc',
+                                        'TN_lc', 'TN_lc',
+                                        'FP_lc', 'FP_lc',
+                                        'FN_lc', 'FN_lc',
+                                        'f1_lc'
+                                        ],
+                                       name='Genus')).round(2)
+
 
     # Create a Pandas Excel writer using XlsxWriter as the engine.
-    writer = pd.ExcelWriter(test_path+out_dir+'/all_dice2.xlsx',
+    writer = pd.ExcelWriter(test_path+out_dir+'/2dslice_dice.xlsx',
                             engine='xlsxwriter')
 
     # Convert the dataframe to an XlsxWriter Excel object.
     df.to_excel(writer, sheet_name='Sheet1')
+    df2.to_excel(writer, sheet_name='Sheet2')
 
     # Close the Pandas Excel writer and output the Excel file.
     writer.save()
