@@ -1,6 +1,7 @@
-# DenseUnet_Esophagus_Segmentation
+# If this repository helps you in anyway, show your love :heart: by putting a :star: on this project 
 
-You are welcome to use this code. If you used the code, please cite:
+# Citation
+
 
 
     @inproceedings{yousefi2018esophageal,
