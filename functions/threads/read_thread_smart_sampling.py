@@ -35,10 +35,12 @@ class read_thread(threading.Thread):
                             settings.bunch_CT_patches=settings.bunch_CT_patches2.copy()
                             settings.bunch_GTV_patches=settings.bunch_GTV_patches2.copy()
                             settings.bunch_Penalize_patches=settings.bunch_Penalize_patches2.copy()
+                            settings.bunch_location_patches=settings.bunch_location_patches2.copy()
 
                             settings.bunch_CT_patches2 = []
                             settings.bunch_GTV_patches2 = []
                             settings.bunch_Penalize_patches2 = []
+                            settings.bunch_location_patches2 = []
                             settings.train_queue.release()
                             self._fill_thread.resume()
                             #time.sleep(2)
@@ -48,9 +50,11 @@ class read_thread(threading.Thread):
                                 settings.bunch_CT_patches = np.vstack((settings.bunch_CT_patches,settings.bunch_CT_patches2))
                                 settings.bunch_GTV_patches = np.vstack((settings.bunch_GTV_patches,settings.bunch_GTV_patches2))
                                 settings.bunch_Penalize_patches = np.vstack((settings.bunch_Penalize_patches,settings.bunch_Penalize_patches2))
+                                settings.bunch_location_patches = np.vstack((settings.bunch_location_patches,settings.bunch_location_patches2))
                                 settings.bunch_CT_patches2=[]
                                 settings.bunch_GTV_patches2=[]
                                 settings.bunch_Penalize_patches2 = []
+                                settings.bunch_location_patches2 = []
                                 settings.train_queue.release()
                                 self._fill_thread.resume()
 
@@ -58,14 +62,14 @@ class read_thread(threading.Thread):
                         if len(settings.bunch_CT_patches_vl) > settings.validation_totalimg_patch:
                             del settings.bunch_CT_patches_vl2
                             del settings.bunch_GTV_patches_vl2
-                            del settings.bunch_Penalize_patches2
+                            del settings.bunch_Penalize_patches_vl2
                             break
-                        if ((len(settings.bunch_GTV_patches_vl) == 0) \
-                                &(len(settings.bunch_GTV_patches_vl) == 0)\
-                                &(len(settings.bunch_Penalize_patches) == 0)\
-                                &(len(settings.bunch_CT_patches_vl2)>0)\
-                                &(len(settings.bunch_Penalize_patches_vl2)>0)\
-                                &(len(settings.bunch_GTV_patches_vl2)>0)):
+                        if ((len(settings.bunch_GTV_patches_vl) == 0)
+                                &(len(settings.bunch_GTV_patches_vl) == 0)
+                                &(len(settings.bunch_Penalize_patches_vl) == 0)
+                                &(len(settings.bunch_CT_patches_vl2)>0)
+                                &(len(settings.bunch_Penalize_patches_vl2)>0)
+                                &(len(settings.bunch_GTV_patches_vl2)>0)  ):
                             settings.bunch_CT_patches_vl = settings.bunch_CT_patches_vl2
                             settings.bunch_CT_patches_vl2 = []
 
@@ -77,7 +81,7 @@ class read_thread(threading.Thread):
                             print('settings.bunch_CT_patches_vl lEN: %d' %(len(settings.bunch_CT_patches_vl )))
                         elif ((len(settings.bunch_GTV_patches_vl) > 0) \
                                 &(len(settings.bunch_GTV_patches_vl) > 0)\
-                                &(len(settings.bunch_Penalize_patches) > 0)\
+                                &(len(settings.bunch_Penalize_patches_vl) > 0)\
                                 &(len(settings.bunch_GTV_patches_vl2) > 0)\
                                 &(len(settings.bunch_GTV_patches_vl2) > 0)\
                                 &(len(settings.bunch_Penalize_patches_vl2) > 0)):

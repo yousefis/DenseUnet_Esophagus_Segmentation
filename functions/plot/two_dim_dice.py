@@ -181,8 +181,8 @@ def compute_tp_tn_fp_fn(result,Gtv,
     res_lc_ones=np.unique(np.where(res_lc)[0])
 
 
-    union_gtv_res = list(set(gtv_ones) | set(res_ones))
-    union_gtv_lc_res = list(set(res_lc_ones) | set(res_ones))
+    union_gtv_res = list(set(gtv_ones) & set(res_ones))
+    union_gtv_lc_res = list(set(res_lc_ones) & set(res_ones))
     for union in union_gtv_res:
         [TP, TN, FP, FN] = tp_tn_fp_fn(res[union,:,:], gtv[union,:,:])
         f1 = f1_measure(TP, TN, FP, FN)
@@ -207,11 +207,8 @@ def compute_tp_tn_fp_fn(result,Gtv,
         dsc_res_lc.append(x_lc)
 
 
-
-
-
         # print('hd:%f,msd:%f' % (hd, msd))
-    print('%s: f1:%f ' % (result.split('/')[-1], f1[0]
+    print('%s:  ' % (result.split('/')[-1]
                                     ))
     return result.split('/')[-1].split('_result.mha')[0],dsc_res,dsc_res_lc
 

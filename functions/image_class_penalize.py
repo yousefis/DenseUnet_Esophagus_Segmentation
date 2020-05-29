@@ -964,6 +964,209 @@ class image_class:
             print('smth wrong')
 
     #--------------------------------------------------------------------------------------------------------
+    def read_patche_online_from_image_bunch_with_trackno(self, sample_no_per_bunch,patch_window,GTV_patchs_size,tumor_percent,other_percent,img_no):
+
+        if len(self.collection)<img_no:
+            return
+        if settings.tr_isread == True:
+            return
+        if len(settings.bunch_GTV_patches)>800:
+            return
+        self.seed += 1
+        np.random.seed(self.seed)
+        settings.read_patche_mutex_tr.acquire()
+        print('start reading:%d'%len(self.collection))
+        patch_no_per_image=int(sample_no_per_bunch/len(self.collection) )
+        # if patch_no_per_image==0:
+        #     patch_no_per_image=1
+        while patch_no_per_image*len(self.collection)<=sample_no_per_bunch:
+            patch_no_per_image+=1
+        CT_image_patchs=[]
+        GTV_patchs=[]
+        Penalize_patchs=[]
+        for ii in range(len(self.collection) ):
+            GTV_image = self.collection[ii].GTV_image
+            CT_image = self.collection[ii].CT_image
+            Torso_image = self.collection[ii].Torso_image
+            Penalize_image = self.collection[ii].Penalize_image
+
+            img_width= self.collection[ii].width
+            img_height= self.collection[ii].height
+
+            min_torso = self.collection[ii].min_torso
+            max_torso = self.collection[ii].max_torso
+            # print(self.collection[ii].ct_name)
+
+            tumor_begin = np.min(np.where(GTV_image != GTV_image[0][0][0])[0])
+            tumor_end = np.max(np.where(GTV_image != GTV_image[0][0][0])[0])
+            torso_range=np.where(Torso_image==1)
+
+
+            '''random numbers for selecting random samples'''
+            random_torso=np.random.randint(1,len(torso_range[0]) ,
+                                           size=int(patch_no_per_image *other_percent))  # get half depth samples from torso
+
+            rand_depth =torso_range[0][random_torso]
+            rand_width =torso_range[1][random_torso]
+            rand_height =torso_range[2][random_torso]
+
+            '''balencing the classes:'''
+            counter = 0
+            rand_depth1 = []  # depth sequence
+            rand_width1 = []  # width sequence
+            rand_height1 = []  # heigh sequence
+            while counter < int(patch_no_per_image * tumor_percent):  # select half of samples from tumor only!
+                if (tumor_begin- int(patch_window / 2)-1<min_torso):
+                    begin=min_torso
+                else:
+                    begin = tumor_begin
+
+                if (tumor_end+ int(patch_window / 2)>=max_torso):
+                   end= max_torso
+                else:
+                   end=tumor_end
+
+                if begin>=end:
+                    dpth=[begin]
+                else:
+                    dpth = np.random.randint(begin, end, size=1)  # select one slice
+
+                if (dpth[0]+ int(patch_window / 2)>=GTV_image.shape[0]):
+                    dpth = [max_torso]
+                if (dpth[0] - int(patch_window / 2) - 1 < 0):
+                    dpth = [min_torso]
+
+                ones = np.where(GTV_image[dpth, 0:img_width,
+                                0:img_height] != 0)  # GTV indices of slice which belong to tumor
+
+                if len(ones[0]):  # if not empty
+                    tmp = int((patch_no_per_image * tumor_percent) / (tumor_end - tumor_begin))
+                    if tmp:
+                        rnd_ones = np.random.randint(0, len(ones[0]),
+                                                     size=tmp)  # number of samples from each slice
+                    else:
+                        rnd_ones = np.random.randint(0, len(ones[0]),
+                                                     size=1)  # number of samples from each slice
+
+                    counter += len(rnd_ones)  # counter for total samples
+                    rand_width1 = np.hstack((rand_width1, ones[1][rnd_ones]))
+                    rand_depth1 = np.hstack((rand_depth1, dpth * np.ones(len(rnd_ones))))
+                    rand_height1 = np.hstack((rand_height1, ones[2][rnd_ones]))
+
+
+            # for sn in range(len(rand_height)):
+            #     tmm=CT_image[int(rand_depth[sn]) - int(patch_window / 2) - 1:int(rand_depth[sn]) + int(patch_window / 2),
+            #       int(rand_width[sn]) - int(patch_window / 2) - 1: int(rand_width[sn]) + int(patch_window / 2),
+            #       int(rand_height[sn]) - int(patch_window / 2) - 1: int(rand_height[sn]) + int(patch_window / 2)]
+            #     if tmm.shape!=(patch_window,patch_window,patch_window):
+            #         print(1)
+
+
+
+            CT_image_patchs1 = np.stack(
+                [(CT_image[int(rand_depth[sn]) - int(patch_window / 2) - 1:int(rand_depth[sn]) + int(patch_window / 2),
+                  int(rand_width[sn]) - int(patch_window / 2) - 1: int(rand_width[sn]) + int(patch_window / 2),
+                  int(rand_height[sn]) - int(patch_window / 2) - 1: int(rand_height[sn]) + int(patch_window / 2)])
+                 for sn in range(len(rand_height))])
+            GTV_patchs1 = np.stack([(GTV_image[
+                                     int(rand_depth[sn]) - int(GTV_patchs_size / 2) - 1:
+                                     int(rand_depth[sn]) + int(GTV_patchs_size / 2),
+                                     int(rand_width[sn]) - int(GTV_patchs_size / 2) - 1:
+                                     int(rand_width[sn]) + int(GTV_patchs_size / 2)
+                                     , int(rand_height[sn]) - int(GTV_patchs_size / 2) - 1:
+                                     int(rand_height[sn]) + int(GTV_patchs_size / 2)
+                                     ] ).astype(int)
+                                    for sn in
+                                    range(len(rand_height))]).reshape(len(rand_depth), GTV_patchs_size,
+                                                            GTV_patchs_size, GTV_patchs_size)
+            Penalize_patchs1 = np.stack([(Penalize_image[
+                                     int(rand_depth[sn]) - int(GTV_patchs_size / 2) - 1:
+                                     int(rand_depth[sn]) + int(GTV_patchs_size / 2),
+                                     int(rand_width[sn]) - int(GTV_patchs_size / 2) - 1:
+                                     int(rand_width[sn]) + int(GTV_patchs_size / 2)
+                                     , int(rand_height[sn]) - int(GTV_patchs_size / 2) - 1:
+                                     int(rand_height[sn]) + int(GTV_patchs_size / 2)
+                                     ] ).astype(float)
+                                    for sn in
+                                    range(len(rand_height))]).reshape(len(rand_depth), GTV_patchs_size,
+                                                            GTV_patchs_size, GTV_patchs_size)
+
+            CT_image_patchs2 = np.stack(
+                [(CT_image[int(rand_depth1[sn]) - int(patch_window / 2) - 1:int(rand_depth1[sn]) + int(patch_window / 2),
+                  int(rand_width1[sn]) - int(patch_window / 2) - 1: int(rand_width1[sn]) + int(patch_window / 2),
+                  int(rand_height1[sn]) - int(patch_window / 2) - 1: int(rand_height1[sn]) + int(patch_window / 2)])
+                 for sn in range(len(rand_height1))])
+            GTV_patchs2 = np.stack([(GTV_image[
+                                     int(rand_depth1[sn]) - int(GTV_patchs_size / 2) - 1:
+                                     int(rand_depth1[sn]) + int(GTV_patchs_size / 2),
+                                     int(rand_width1[sn]) - int(GTV_patchs_size / 2) - 1:
+                                     int(rand_width1[sn]) + int(GTV_patchs_size / 2)
+                                     , int(rand_height1[sn]) - int(GTV_patchs_size / 2) - 1:
+                                     int(rand_height1[sn]) + int(GTV_patchs_size / 2)
+                                     ] ).astype(int)
+                                    for sn in
+                                    range(len(rand_height1))]).reshape(len(rand_depth1), GTV_patchs_size,
+                                                                      GTV_patchs_size, GTV_patchs_size)
+
+            Penalize_patchs2 = np.stack([(Penalize_image[
+                                     int(rand_depth1[sn]) - int(GTV_patchs_size / 2) - 1:
+                                     int(rand_depth1[sn]) + int(GTV_patchs_size / 2),
+                                     int(rand_width1[sn]) - int(GTV_patchs_size / 2) - 1:
+                                     int(rand_width1[sn]) + int(GTV_patchs_size / 2)
+            , int(rand_height1[sn]) - int(GTV_patchs_size / 2) - 1:
+              int(rand_height1[sn]) + int(GTV_patchs_size / 2)
+                                     ]).astype(float)
+                                    for sn in
+                                    range(len(rand_height1))]).reshape(len(rand_depth1), GTV_patchs_size,
+                                                                       GTV_patchs_size, GTV_patchs_size)
+            if len(CT_image_patchs)==0:
+                CT_image_patchs = CT_image_patchs1
+                CT_image_patchs = np.vstack((CT_image_patchs, CT_image_patchs2))
+
+                GTV_patchs = GTV_patchs1
+                GTV_patchs = np.vstack((GTV_patchs, GTV_patchs2))
+
+                Penalize_patchs = Penalize_patchs1
+                Penalize_patchs = np.vstack((Penalize_patchs, Penalize_patchs2))
+
+            else:
+                CT_image_patchs = np.vstack((CT_image_patchs,CT_image_patchs1))
+                CT_image_patchs = np.vstack((CT_image_patchs,CT_image_patchs2))
+                GTV_patchs = np.vstack((GTV_patchs,GTV_patchs1))
+                GTV_patchs = np.vstack((GTV_patchs,GTV_patchs2))
+                Penalize_patchs = np.vstack((Penalize_patchs, Penalize_patchs1))
+                Penalize_patchs = np.vstack((Penalize_patchs, Penalize_patchs2))
+
+            print(len(GTV_patchs))
+            if len(GTV_patchs)!=len(Penalize_patchs):
+                print(1)
+
+
+        CT_image_patchs1, GTV_patchs1,Penalize_patchs1=self.shuffle_lists( CT_image_patchs, GTV_patchs,Penalize_patchs)
+
+        if self.is_training==1:
+
+            settings.bunch_CT_patches2=CT_image_patchs1
+            settings.bunch_GTV_patches2=GTV_patchs1
+            settings.bunch_Penalize_patches2=Penalize_patchs1
+
+        else:
+
+            if len(settings.bunch_GTV_patches_vl2)==0:
+                settings.bunch_CT_patches_vl2=CT_image_patchs1
+                settings.bunch_GTV_patches_vl2=GTV_patchs1
+                settings.bunch_Penalize_patches_vl2=Penalize_patchs1
+            else:
+                settings.bunch_CT_patches_vl2 = np.vstack((settings.bunch_CT_patches_vl2,CT_image_patchs1))
+                settings.bunch_GTV_patches_vl2 = np.vstack((settings.bunch_GTV_patches_vl2,GTV_patchs1))
+                settings.bunch_Penalize_patches_vl2 = np.vstack((settings.bunch_Penalize_patches_vl2,Penalize_patchs1))
+
+
+        settings.tr_isread=True
+        settings.read_patche_mutex_tr.release()
+        if len(settings.bunch_CT_patches_vl2)!=len(settings.bunch_GTV_patches_vl2) or len(settings.bunch_Penalize_patches_vl2)!=len(settings.bunch_GTV_patches_vl2 ):
+            print('smth wrong')
+    #--------------------------------------------------------------------------------------------------------
     def return_patches(self,batch_no):
         settings.train_queue.acquire()
         CT_patch=[]
