@@ -474,6 +474,7 @@ class dense_seg:
                                                                                 alpha: self.alpha_coeff,
                                                                                 beta: self.beta_coeff
                                                                                 })
+
                     elapsed=time.time()-tic
                     #<fill sampling list
 
