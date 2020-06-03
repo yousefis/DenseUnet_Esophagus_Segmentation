@@ -958,7 +958,7 @@ class image_class:
             print('smth wrong')
 
     # --------------------------------------------------------------------------------------------------------
-    def return_patches(self, batch_no):
+    def return_patches(self, batch_no, point=0):
         settings.train_queue.acquire()
         CT_patch = []
         GTv_patch = []

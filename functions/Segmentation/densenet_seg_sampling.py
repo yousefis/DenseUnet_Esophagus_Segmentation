@@ -448,7 +448,7 @@ class dense_seg:
                 while(step*self.batch_no<self.no_sample_per_each_itr):
 
                     [train_CT_image_patchs, train_GTV_label,
-                     train_Penalize_patch,location_patch,loss_coef_weights] = _image_class.return_patches( self.batch_no)
+                     train_Penalize_patch,location_patch,loss_coef_weights] = _image_class.return_patches( self.batch_no,point)
 
 
                     if (len(train_CT_image_patchs)<self.batch_no)|(len(train_GTV_label)<self.batch_no)\
@@ -478,6 +478,13 @@ class dense_seg:
                                                                                 })
 
                     settings.patch_list.append(loss_train1,location_patch)
+                    refine_counter=50
+                    if point % refine_counter == 0: # every refine_counter%50 iteration keep the worse batches in the list
+                        settings.patch_list.refine()
+                    mutation_counter =100
+                    if point % mutation_counter == 0:
+                        settings.patch_list.mutation()
+
 
                     elapsed=time.time()-tic
 
