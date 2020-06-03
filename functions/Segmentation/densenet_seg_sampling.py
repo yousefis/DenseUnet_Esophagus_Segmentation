@@ -401,6 +401,8 @@ class dense_seg:
                                                                     is_training_bn:False,
                                                                     alpha:1,
                                                                     beta:1})
+
+
                         elapsed=time.time()-tic
 
                         acc_validation += acc_vali
@@ -475,10 +477,10 @@ class dense_seg:
                                                                                 beta: self.beta_coeff
                                                                                 })
 
-                    elapsed=time.time()-tic
-                    #<fill sampling list
+                    settings.patch_list.append(loss_train1,location_patch)
 
-                    #fill sampling list>
+                    elapsed=time.time()-tic
+
 
 
                     dsc_train1=dsc_train11[1]
@@ -518,7 +520,7 @@ class dense_seg:
                         chckpnt_path = os.path.join(self.chckpnt_dir,
                                                     ('densenet_unet_inter_epoch%d_point%d.ckpt' % (epoch, point)))
                         saver.save(sess, chckpnt_path, global_step=point)
-
+                        settings.patch_list.refine()
 
 
                     itr1 = itr1 + 1
