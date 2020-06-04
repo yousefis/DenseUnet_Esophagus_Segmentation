@@ -21,6 +21,7 @@ import psutil
 from shutil import copyfile
 from functions.threads.patch_extractor_smart_sampling import _patch_extractor_thread
 from functions.optimizer.RectifiedAdam import RAdamOptimizer as RAdam
+import random
 # --------------------------------------------------------------------------------------------------------
 class dense_seg:
     def __init__(self,data,densnet_unet_config ,compression_coefficient ,growth_rate ,
@@ -28,6 +29,7 @@ class dense_seg:
                  train_tag, validation_tag, test_tag,img_name,label_name,torso_tag,log_tag,
                  tumor_percent,other_percent,Logs,fold,server_path):
         settings.init()
+        random.seed(90)
 
         # ==================================
         # densenet_unet parameters:
@@ -477,13 +479,33 @@ class dense_seg:
                                                                                 beta: self.beta_coeff
                                                                                 })
 
-                    settings.patch_list.append(loss_train1,location_patch)
+                    settings.patch_list.append(loss_train1,train_CT_image_patchs, train_GTV_label, train_Penalize_patch)
                     refine_counter=50
                     if point % refine_counter == 0: # every refine_counter%50 iteration keep the worse batches in the list
                         settings.patch_list.refine()
                     mutation_counter =100
                     if point % mutation_counter == 0:
-                        settings.patch_list.mutation()
+
+                        settings.patch_list.intercourse()
+                        _image_class.read_patches_smart_sampling()
+
+                        for ch in range(len(settings.patch_list.children)):
+                            [loss_samples] = sess.run(
+                                [cost],
+                                feed_dict={image: train_CT_image_patchs,
+                                           label: train_GTV_label,
+                                           penalize: train_Penalize_patch,
+                                           # loss_coef: loss_coef_weights,
+                                           dropout: self.dropout_keep,
+                                           is_training: True,
+                                           ave_vali_acc: -1,
+                                           ave_loss_vali: -1,
+                                           ave_dsc_vali: -1,
+                                           dense_net_dim: self.patch_window,
+                                           is_training_bn: True,
+                                           alpha: self.alpha_coeff,
+                                           beta: self.beta_coeff
+                                           })
 
 
                     elapsed=time.time()-tic

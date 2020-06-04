@@ -551,6 +551,17 @@ class image_class:
 
             Penalize_patchs1 = []#np.vstack([Penalize_patchs[sn]] for sn in index_shuf)
             return CT_image_patchs1, GTV_patchs1,Penalize_patchs1
+    # #--------------------------------------------------------------------------------------------------------
+    # def read_patches_smart_sampling(self,):
+    #     for i in range(len(settings.patch_list.children)):
+    #         for j in range(1,3): #number of children
+    #             for k in len(settings.patch_list.children[i][j]): #number of batches
+    #                 patche_info= settings.patch_list.children[i][j][k]
+    #                 ii=int(patche_info[0])
+    #                 GTV_image = self.collection[ii].GTV_image
+    #                 CT_image = self.collection[ii].CT_image
+    #                 Torso_image = self.collection[ii].Torso_image
+
     #--------------------------------------------------------------------------------------------------------
             # read patches from the images which are in the RAM
 
