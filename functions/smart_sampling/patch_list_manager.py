@@ -4,7 +4,7 @@ class smart_patching:
     def __init__(self):
         # self.node = collections.namedtuple('node','loss location')
         self.patch_list = []
-        self.max_elements = 15
+        self.max_elements = 14
         self.worst_patch_list=[]
         random.seed(90)
         self.children=[]
@@ -18,8 +18,8 @@ class smart_patching:
         if len(self.patch_list)<self.max_elements:
             return
         # if len(self.worst_patch_list):
-        self.worst_patch_list = self.worst_patch_list + (
-                list(sorted(self.patch_list, key=lambda x: x[-1])[0:self.max_elements]))
+        self.worst_patch_list=self.worst_patch_list+self.patch_list
+        self.worst_patch_list =  (list(sorted(self.worst_patch_list, key=lambda x: x[-1])[0:self.max_elements]))
         # else:
         #     self.worst_patch_list = (sorted(self.patch_list, key=lambda x: x[-1])[0: self.max_elements])
         self.patch_list.clear()
@@ -30,11 +30,11 @@ class smart_patching:
         for i in range(int(len(list_indv)/2)):
             indv1 = self.worst_patch_list[list_indv[2 * i]][0]
             indv2 = self.worst_patch_list[list_indv[2 * i + 1]][0]
-            randno = random.randint(0, len(indv1))
+            randno = random.randint(1, len(indv1)-1)
             child1 = np.concatenate((indv1[0:randno], indv2[randno:]))
             child2 = np.concatenate((indv2[0:randno], indv1[randno:]))
             parents_indx = [list_indv[2 * i], list_indv[2 * i + 1]]  # indice of the parents
-            self.children.append((parents_indx, child1, child2))
+            self.children.append((parents_indx,child1, child2))
 
 
 

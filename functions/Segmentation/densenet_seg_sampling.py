@@ -492,10 +492,9 @@ class dense_seg:
                             for ch in range(len(settings.patch_list.children)):
                                 [loss_samples] = sess.run(
                                     [cost],
-                                    feed_dict={image: train_CT_image_patchs,
-                                               label: train_GTV_label,
-                                               penalize: train_Penalize_patch,
-                                               # loss_coef: loss_coef_weights,
+                                    feed_dict={image: settings.patch_list.children[ch][1][1],
+                                               label: settings.patch_list.children[ch][1][2],
+                                               penalize: settings.patch_list.children[ch][1][3],
                                                dropout: self.dropout_keep,
                                                is_training: True,
                                                ave_vali_acc: -1,
@@ -506,7 +505,25 @@ class dense_seg:
                                            alpha: self.alpha_coeff,
                                            beta: self.beta_coeff
                                            })
-
+                                if loss_samples<settings.patch_list.worst_patch_list[settings.patch_list.children[ch][0][0]]:
+                                    settings.patch_list.worst_patch_list[ch][0][0] = settings.patch_list.children[ch] #replace parent with child
+                                [loss_samples] = sess.run(
+                                    [cost],
+                                    feed_dict={image: settings.patch_list.children[ch][2][1],
+                                               label: settings.patch_list.children[ch][2][2],
+                                               penalize: settings.patch_list.children[ch][2][3],
+                                               dropout: self.dropout_keep,
+                                               is_training: True,
+                                               ave_vali_acc: -1,
+                                               ave_loss_vali: -1,
+                                               ave_dsc_vali: -1,
+                                               dense_net_dim: self.patch_window,
+                                               is_training_bn: True,
+                                               alpha: self.alpha_coeff,
+                                               beta: self.beta_coeff
+                                               })
+                                if loss_samples<settings.patch_list.worst_patch_list[settings.patch_list.children[ch][1][0]]:
+                                    settings.patch_list.worst_patch_list[ch][1][0] = settings.patch_list.children[ch] #replace parent with child
 
                     elapsed=time.time()-tic
 
@@ -549,7 +566,7 @@ class dense_seg:
                         chckpnt_path = os.path.join(self.chckpnt_dir,
                                                     ('densenet_unet_inter_epoch%d_point%d.ckpt' % (epoch, point)))
                         saver.save(sess, chckpnt_path, global_step=point)
-                        settings.patch_list.refine()
+                        # settings.patch_list.refine()
 
 
                     itr1 = itr1 + 1

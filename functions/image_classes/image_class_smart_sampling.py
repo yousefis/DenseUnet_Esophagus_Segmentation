@@ -11,6 +11,7 @@ class image_class:
     def __init__(self, CTs, GTVs, Torsos, Penalize
                  , bunch_of_images_no=20, is_training=1, patch_window=47, gtv_patch_window=33):
         self.CTs = CTs
+        self.max_patches_in_mem=800
         self.GTVs = GTVs
         self.Torsos = Torsos
         self.Penalize = Penalize
@@ -349,6 +350,8 @@ class image_class:
     # --------------------------------------------------------------------------------------------------------
     def read_bunch_of_images_from_all_datasets(self):  # for training
         if settings.tr_isread == False:
+            return
+        if len(settings.bunch_GTV_patches) > self.max_patches_in_mem and self.collection>=self.bunch_of_images_no:
             return
         settings.read_patche_mutex_tr.acquire()
         self.collection.clear()
@@ -758,7 +761,7 @@ class image_class:
             return
         if settings.tr_isread == True:
             return
-        if len(settings.bunch_GTV_patches) > 400:
+        if len(settings.bunch_GTV_patches) > self.max_patches_in_mem:
             return
         self.seed += 1
         np.random.seed(self.seed)
