@@ -758,7 +758,7 @@ class image_class:
             return
         if settings.tr_isread == True:
             return
-        if len(settings.bunch_GTV_patches) > 800:
+        if len(settings.bunch_GTV_patches) > 400:
             return
         self.seed += 1
         np.random.seed(self.seed)

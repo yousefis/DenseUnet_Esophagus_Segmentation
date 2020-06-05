@@ -381,7 +381,7 @@ class dense_seg:
                     dsc_validation=0
 
                     while (validation_step * self.batch_no_validation <settings.validation_totalimg_patch):
-                        [validation_CT_image, validation_GTV_image,validation_Penalize_patch] = _image_class_vl.return_patches_validation( validation_step * self.batch_no_validation, (validation_step + 1) *self.batch_no_validation)
+                        [validation_CT_image, validation_GTV_image,validation_Penalize_patch] = _image_class_vl.return_patches_validation(validation_step * self.batch_no_validation, (validation_step + 1) *self.batch_no_validation)
                         if (len(validation_CT_image)<self.batch_no_validation) | (len(validation_GTV_image)<self.batch_no_validation) | (len(validation_Penalize_patch)<self.batch_no_validation) :
                             _read_thread_vl.resume()
                             time.sleep(0.5)
@@ -487,22 +487,22 @@ class dense_seg:
                     if point % mutation_counter == 0:
 
                         settings.patch_list.intercourse()
-                        _image_class.read_patches_smart_sampling()
-
-                        for ch in range(len(settings.patch_list.children)):
-                            [loss_samples] = sess.run(
-                                [cost],
-                                feed_dict={image: train_CT_image_patchs,
-                                           label: train_GTV_label,
-                                           penalize: train_Penalize_patch,
-                                           # loss_coef: loss_coef_weights,
-                                           dropout: self.dropout_keep,
-                                           is_training: True,
-                                           ave_vali_acc: -1,
-                                           ave_loss_vali: -1,
-                                           ave_dsc_vali: -1,
-                                           dense_net_dim: self.patch_window,
-                                           is_training_bn: True,
+                        # _image_class.read_patches_smart_sampling()
+                        if point:
+                            for ch in range(len(settings.patch_list.children)):
+                                [loss_samples] = sess.run(
+                                    [cost],
+                                    feed_dict={image: train_CT_image_patchs,
+                                               label: train_GTV_label,
+                                               penalize: train_Penalize_patch,
+                                               # loss_coef: loss_coef_weights,
+                                               dropout: self.dropout_keep,
+                                               is_training: True,
+                                               ave_vali_acc: -1,
+                                               ave_loss_vali: -1,
+                                               ave_dsc_vali: -1,
+                                               dense_net_dim: self.patch_window,
+                                               is_training_bn: True,
                                            alpha: self.alpha_coeff,
                                            beta: self.beta_coeff
                                            })
