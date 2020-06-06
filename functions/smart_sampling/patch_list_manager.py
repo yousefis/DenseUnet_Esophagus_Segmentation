@@ -35,8 +35,13 @@ class smart_patching:
             child2 = (np.concatenate((indv2[0][0:randno], indv1[0][randno:])),np.concatenate((indv2[1][0:randno], indv1[1][randno:])),np.concatenate((indv2[2][0:randno], indv1[2][randno:])))
             parents_indx = [list_indv[2 * i], list_indv[2 * i + 1]]  # indice of the parents
             self.children.append((parents_indx,child1, child2))
-
-
+    def clear_lists(self):
+        self.patch_list.clear()
+        self.patch_list = []
+        self.worst_patch_list.clear()
+        self.worst_patch_list = []
+        self.children.clear()
+        self.children = []
 
 
 if __name__=="__main__":

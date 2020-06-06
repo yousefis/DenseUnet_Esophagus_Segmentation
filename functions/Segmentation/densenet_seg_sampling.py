@@ -126,7 +126,7 @@ class dense_seg:
         self.img_width = 500
         self.img_height = 500
         # ======================================
-        bunch_of_images_no=20
+        bunch_of_images_no=24
         sample_no=500
         _image_class_vl = image_class(validation_CTs, validation_GTVs, validation_Torso,validation_penalize
                                       , bunch_of_images_no=bunch_of_images_no,  is_training=0,
@@ -163,8 +163,8 @@ class dense_seg:
                                       validation_sample_no=self.validation_samples, is_training=0)
         _read_thread_vl.start()
         # ======================================
-        bunch_of_images_no = 24
-        sample_no=240
+        bunch_of_images_no = 18
+        sample_no=140
         _image_class = image_class(train_CTs, train_GTVs, train_Torso,train_penalize
                                    , bunch_of_images_no=bunch_of_images_no,is_training=1,patch_window=self.patch_window
                                    )
@@ -541,13 +541,16 @@ class dense_seg:
                                         strong_child_CT=np.vstack((strong_child_CT,np.squeeze(settings.patch_list.children[ch][2][0])))
                                         strong_child_GTV=np.vstack((strong_child_GTV,np.squeeze(settings.patch_list.children[ch][2][1])))
                                         strong_child_Penalize=np.vstack((strong_child_Penalize,np.squeeze(settings.patch_list.children[ch][2][2])))
-
-                            settings.bunch_CT_patches = np.hstack((settings.bunch_CT_patches,strong_child_CT))
-                            settings.bunch_GTV_patches = np.hstack((settings.bunch_GTV_patches,strong_child_GTV))
-                            settings.bunch_Penalize_patches = np.hstack((settings.bunch_Penalize_patches,strong_child_Penalize))
-                            strong_child_CT.clear()
-                            strong_child_GTV.clear()
-                            strong_child_Penalize.clear()
+                            try:
+                                settings.bunch_CT_patches = np.hstack((settings.bunch_CT_patches,strong_child_CT))
+                                settings.bunch_GTV_patches = np.hstack((settings.bunch_GTV_patches,strong_child_GTV))
+                                settings.bunch_Penalize_patches = np.hstack((settings.bunch_Penalize_patches,strong_child_Penalize))
+                            except:
+                                o=1
+                            strong_child_CT=[]
+                            strong_child_GTV=[]
+                            strong_child_Penalize=[]
+                            settings.patch_list.clear_lists()
                     elapsed=time.time()-tic
 
 
