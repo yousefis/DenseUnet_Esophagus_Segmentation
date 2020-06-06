@@ -493,9 +493,9 @@ class dense_seg:
                             for ch in range(len(settings.patch_list.children)):
                                 [loss_samples] = sess.run(
                                     [cost],
-                                    feed_dict={image: settings.patch_list.children[ch][1][1],
-                                               label: settings.patch_list.children[ch][1][2],
-                                               penalize: settings.patch_list.children[ch][1][3],
+                                    feed_dict={image: settings.patch_list.children[ch][1][0],
+                                               label: settings.patch_list.children[ch][1][1],
+                                               penalize: settings.patch_list.children[ch][1][2],
                                                dropout: self.dropout_keep,
                                                is_training: True,
                                                ave_vali_acc: -1,
@@ -506,16 +506,21 @@ class dense_seg:
                                            alpha: self.alpha_coeff,
                                            beta: self.beta_coeff
                                            })
-                                if loss_samples<settings.patch_list.worst_patch_list[settings.patch_list.children[ch][0][0]]:
+                                if loss_samples>settings.patch_list.worst_patch_list[settings.patch_list.children[ch][0][0]][-1]:
                                     # settings.patch_list.worst_patch_list[ch][0][0] = settings.patch_list.children[ch] #replace parent with child
-                                    strong_child_CT=np.hstack((strong_child_CT,settings.patch_list.children[ch][1][1]))
-                                    strong_child_GTV=np.hstack((strong_child_GTV,settings.patch_list.children[ch][1][2]))
-                                    strong_child_Penalize=np.hstack((strong_child_Penalize,settings.patch_list.children[ch][1][3]))
+                                    if len(strong_child_CT)==0:
+                                        strong_child_CT=np.squeeze(settings.patch_list.children[ch][1][0])
+                                        strong_child_GTV=np.squeeze(settings.patch_list.children[ch][1][1])
+                                        strong_child_Penalize=np.squeeze(settings.patch_list.children[ch][1][2])
+                                    else:
+                                        strong_child_CT=np.vstack((strong_child_CT,np.squeeze(settings.patch_list.children[ch][1][0])))
+                                        strong_child_GTV=np.vstack((strong_child_GTV,np.squeeze(settings.patch_list.children[ch][1][1])))
+                                        strong_child_Penalize=np.vstack((strong_child_Penalize,np.squeeze(settings.patch_list.children[ch][1][2])))
                                 [loss_samples] = sess.run(
                                     [cost],
-                                    feed_dict={image: settings.patch_list.children[ch][2][1],
-                                               label: settings.patch_list.children[ch][2][2],
-                                               penalize: settings.patch_list.children[ch][2][3],
+                                    feed_dict={image: settings.patch_list.children[ch][2][0],
+                                               label: settings.patch_list.children[ch][2][1],
+                                               penalize: settings.patch_list.children[ch][2][2],
                                                dropout: self.dropout_keep,
                                                is_training: True,
                                                ave_vali_acc: -1,
@@ -526,15 +531,23 @@ class dense_seg:
                                                alpha: self.alpha_coeff,
                                                beta: self.beta_coeff
                                                })
-                                if loss_samples<settings.patch_list.worst_patch_list[settings.patch_list.children[ch][1][0]]:
-                                    # settings.patch_list.worst_patch_list[ch][1][0] = settings.patch_list.children[ch] #replace parent with child
-                                    strong_child_CT = np.hstack((strong_child_CT, settings.patch_list.children[ch][2][1]))
-                                    strong_child_GTV = np.hstack((strong_child_GTV, settings.patch_list.children[ch][2][2]))
-                                    strong_child_Penalize = np.hstack((strong_child_Penalize, settings.patch_list.children[ch][2][3]))
+                                if loss_samples>settings.patch_list.worst_patch_list[settings.patch_list.children[ch][0][1]][-1]:
+                                    # settings.patch_list.worst_patch_list[ch][0][0] = settings.patch_list.children[ch] #replace parent with child
+                                    if len(strong_child_CT)==0:
+                                        strong_child_CT=np.squeeze(settings.patch_list.children[ch][2][0])
+                                        strong_child_GTV=np.squeeze(settings.patch_list.children[ch][2][1])
+                                        strong_child_Penalize=np.squeeze(settings.patch_list.children[ch][2][2])
+                                    else:
+                                        strong_child_CT=np.vstack((strong_child_CT,np.squeeze(settings.patch_list.children[ch][2][0])))
+                                        strong_child_GTV=np.vstack((strong_child_GTV,np.squeeze(settings.patch_list.children[ch][2][1])))
+                                        strong_child_Penalize=np.vstack((strong_child_Penalize,np.squeeze(settings.patch_list.children[ch][2][2])))
 
                             settings.bunch_CT_patches = np.hstack((settings.bunch_CT_patches,strong_child_CT))
                             settings.bunch_GTV_patches = np.hstack((settings.bunch_GTV_patches,strong_child_GTV))
                             settings.bunch_Penalize_patches = np.hstack((settings.bunch_Penalize_patches,strong_child_Penalize))
+                            strong_child_CT.clear()
+                            strong_child_GTV.clear()
+                            strong_child_Penalize.clear()
                     elapsed=time.time()-tic
 
 
