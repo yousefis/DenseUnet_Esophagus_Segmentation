@@ -28,11 +28,11 @@ class smart_patching:
         list_indv = list(range(len(self.worst_patch_list)))  # number of individuals
         random.shuffle(list_indv)  # individuals selection
         for i in range(int(len(list_indv)/2)):
-            indv1 = self.worst_patch_list[list_indv[2 * i]][0]
-            indv2 = self.worst_patch_list[list_indv[2 * i + 1]][0]
+            indv1 = self.worst_patch_list[list_indv[2 * i]]
+            indv2 = self.worst_patch_list[list_indv[2 * i + 1]]
             randno = random.randint(1, len(indv1)-1)
-            child1 = np.concatenate((indv1[0:randno], indv2[randno:]))
-            child2 = np.concatenate((indv2[0:randno], indv1[randno:]))
+            child1 = (np.concatenate((indv1[0][0:randno], indv2[0][randno:])),np.concatenate((indv1[1][0:randno], indv2[1][randno:])),np.concatenate((indv1[2][0:randno], indv2[2][randno:])))
+            child2 = (np.concatenate((indv2[0][0:randno], indv1[0][randno:])),np.concatenate((indv2[1][0:randno], indv1[1][randno:])),np.concatenate((indv2[2][0:randno], indv1[2][randno:])))
             parents_indx = [list_indv[2 * i], list_indv[2 * i + 1]]  # indice of the parents
             self.children.append((parents_indx,child1, child2))
 
