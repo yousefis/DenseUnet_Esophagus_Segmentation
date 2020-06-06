@@ -534,10 +534,10 @@ class image_class:
 
     # --------------------------------------------------------------------------------------------------------
     # shuffling the patches
-    def shuffle_lists(self, CT_image_patchs, GTV_patchs, Penalize_patchs,patches_location):
+    def shuffle_lists(self, CT_image_patchs, GTV_patchs, Penalize_patchs):
         index_shuf = list(range(len(GTV_patchs)))
         shuffle(index_shuf)
-        patches_location1=[]
+        # patches_location1=[]
         CT_image_patchs1 = np.vstack([CT_image_patchs[sn]]
                                      for sn in index_shuf)
         GTV_patchs1 = np.vstack([GTV_patchs[sn]]
@@ -545,11 +545,11 @@ class image_class:
 
         Penalize_patchs1 = np.vstack([Penalize_patchs[sn]]
                                      for sn in index_shuf)
-        if len(patches_location):
-            patches_location1 = np.vstack([patches_location[sn]]
-                                      for sn in index_shuf)
+        # if len(patches_location):
+        #     patches_location1 = np.vstack([patches_location[sn]]
+        #                               for sn in index_shuf)
 
-        return CT_image_patchs1, GTV_patchs1, Penalize_patchs1,patches_location1
+        return CT_image_patchs1, GTV_patchs1, Penalize_patchs1#,patches_location1
 
     # --------------------------------------------------------------------------------------------------------
     # read patches from the images which are in the RAM
@@ -730,8 +730,7 @@ class image_class:
 
         if len(GTV_patchs) != len(Penalize_patchs):
             print(1)
-        CT_image_patchs1, GTV_patchs1, Penalize_patchs1,patches_location1 = self.shuffle_lists(CT_image_patchs, GTV_patchs,
-                                                                             Penalize_patchs,[])
+        [CT_image_patchs1, GTV_patchs1, Penalize_patchs1] = self.shuffle_lists(CT_image_patchs, GTV_patchs, Penalize_patchs)
 
 
 
@@ -746,9 +745,7 @@ class image_class:
 
         settings.vl_isread = True
         settings.read_patche_mutex_vl.release()
-        if len(settings.bunch_CT_patches_vl2) != len(
-                settings.bunch_GTV_patches_vl2) or len(settings.bunch_Penalize_patches_vl2) != len(
-            settings.bunch_GTV_patches_vl2):
+        if len(settings.bunch_CT_patches_vl2) != len(settings.bunch_GTV_patches_vl2) or len(settings.bunch_Penalize_patches_vl2) != len(settings.bunch_GTV_patches_vl2):
             print('smth wrong')
 
     # --------------------------------------------------------------------------------------------------------
@@ -775,7 +772,7 @@ class image_class:
         CT_image_patchs = []
         GTV_patchs = []
         Penalize_patchs = []
-        patches_location = []
+        # patches_location = []
         for ii in range(len(self.collection)):
             GTV_image = self.collection[ii].GTV_image
             CT_image = self.collection[ii].CT_image
@@ -869,8 +866,8 @@ class image_class:
                                     range(len(rand_height))]).reshape(len(rand_depth), GTV_patchs_size,
                                                                       GTV_patchs_size, GTV_patchs_size)
 
-            patches_location1=  np.stack([[self.collection[ii].img_index,rand_width[sn],rand_depth[sn],rand_height[sn]]
-                                         for sn in range(len(rand_height))])
+            # patches_location1=  np.stack([[self.collection[ii].img_index,rand_width[sn],rand_depth[sn],rand_height[sn]]
+            #                              for sn in range(len(rand_height))])
 
             Penalize_patchs1 = np.stack([(Penalize_image[
                                           int(rand_depth[sn]) - int(GTV_patchs_size / 2) - 1:
@@ -901,9 +898,9 @@ class image_class:
                                     for sn in
                                     range(len(rand_height1))]).reshape(len(rand_depth1), GTV_patchs_size,
                                                                        GTV_patchs_size, GTV_patchs_size)
-            patches_location2 = np.stack(
-                [[self.collection[ii].img_index, rand_width1[sn], rand_depth1[sn], rand_height1[sn]]
-                 for sn in range(len(rand_height1))])
+            # patches_location2 = np.stack(
+            #     [[self.collection[ii].img_index, rand_width1[sn], rand_depth1[sn], rand_height1[sn]]
+            #      for sn in range(len(rand_height1))])
 
             Penalize_patchs2 = np.stack([(Penalize_image[
                                           int(rand_depth1[sn]) - int(GTV_patchs_size / 2) - 1:
@@ -923,8 +920,8 @@ class image_class:
                 GTV_patchs = GTV_patchs1
                 GTV_patchs = np.vstack((GTV_patchs, GTV_patchs2))
 
-                patches_location = patches_location1
-                patches_location = np.vstack((patches_location, patches_location2))
+                # patches_location = patches_location1
+                # patches_location = np.vstack((patches_location, patches_location2))
 
                 Penalize_patchs = Penalize_patchs1
                 Penalize_patchs = np.vstack((Penalize_patchs, Penalize_patchs2))
@@ -934,8 +931,8 @@ class image_class:
                 CT_image_patchs = np.vstack((CT_image_patchs, CT_image_patchs2))
                 GTV_patchs = np.vstack((GTV_patchs, GTV_patchs1))
                 GTV_patchs = np.vstack((GTV_patchs, GTV_patchs2))
-                patches_location = np.vstack((patches_location, patches_location1))
-                patches_location = np.vstack((patches_location, patches_location2))
+                # patches_location = np.vstack((patches_location, patches_location1))
+                # patches_location = np.vstack((patches_location, patches_location2))
                 Penalize_patchs = np.vstack((Penalize_patchs, Penalize_patchs1))
                 Penalize_patchs = np.vstack((Penalize_patchs, Penalize_patchs2))
 
@@ -944,20 +941,20 @@ class image_class:
             if len(GTV_patchs) != len(Penalize_patchs):
                 print(1)
 
-        CT_image_patchs1, GTV_patchs1, Penalize_patchs1,patches_location1 = self.shuffle_lists(CT_image_patchs, GTV_patchs,
-                                                                             Penalize_patchs,patches_location)
+        CT_image_patchs1, GTV_patchs1, Penalize_patchs1 = self.shuffle_lists(CT_image_patchs, GTV_patchs,
+                                                                             Penalize_patchs)
 
         # if self.is_training == 1:
         settings.bunch_CT_patches2 = CT_image_patchs1
         settings.bunch_GTV_patches2 = GTV_patchs1
-        settings.bunch_location_patches2 = patches_location1
+        # settings.bunch_location_patches2 = patches_location1
         settings.bunch_Penalize_patches2 = Penalize_patchs1
 
         settings.tr_isread = True
         settings.read_patche_mutex_tr.release()
         if len(settings.bunch_CT_patches2) != len(settings.bunch_GTV_patches2) or \
-                len(settings.bunch_CT_patches2) != len(settings.bunch_location_patches2) or\
                 len(settings.bunch_CT_patches2) != len(settings.bunch_Penalize_patches2):
+                # len(settings.bunch_CT_patches2) != len(settings.bunch_location_patches2) or\
             print('smth wrong')
 
     # --------------------------------------------------------------------------------------------------------
@@ -967,19 +964,19 @@ class image_class:
         GTv_patch = []
         loss_coef = []
         Penalize_patch = []
-        location_patch = []
+        # location_patch = []
         if len(settings.bunch_CT_patches) >= batch_no and \
                 len(settings.bunch_GTV_patches) >= batch_no:
             # \                        len(settings.bunch_Penalize_patches) >= batch_no:
             CT_patch = settings.bunch_CT_patches[0:batch_no]
             GTv_patch = settings.bunch_GTV_patches[0:batch_no]
             Penalize_patch = settings.bunch_Penalize_patches[0:batch_no]
-            location_patch = settings.bunch_location_patches[0:batch_no]
+            # location_patch = settings.bunch_location_patches[0:batch_no]
 
             settings.bunch_CT_patches = np.delete(settings.bunch_CT_patches, range(batch_no), axis=0)
             settings.bunch_GTV_patches = np.delete(settings.bunch_GTV_patches, range(batch_no), axis=0)
             settings.bunch_Penalize_patches = np.delete(settings.bunch_Penalize_patches, range(batch_no), axis=0)
-            settings.bunch_location_patches = np.delete(settings.bunch_location_patches, range(batch_no), axis=0)
+            # settings.bunch_location_patches = np.delete(settings.bunch_location_patches, range(batch_no), axis=0)
             GTv_patch = np.eye(2)[GTv_patch]
             CT_patch = CT_patch[..., np.newaxis]
             Penalize_patch = Penalize_patch[..., np.newaxis]
@@ -995,13 +992,13 @@ class image_class:
                                                    axis=0)
             settings.bunch_Penalize_patches = np.delete(settings.bunch_Penalize_patches,
                                                         range(len(settings.bunch_Penalize_patches)), axis=0)
-            settings.bunch_location_patches = np.delete(settings.bunch_location_patches,
-                                                        range(len(settings.bunch_location_patches)), axis=0)
+            # settings.bunch_location_patches = np.delete(settings.bunch_location_patches,
+            #                                             range(len(settings.bunch_location_patches)), axis=0)
         settings.train_queue.release()
-        if len(CT_patch) != len(GTv_patch) | len(CT_patch) != len(Penalize_patch)| len(CT_patch) != len(location_patch):
+        if len(CT_patch) != len(GTv_patch) | len(CT_patch) != len(Penalize_patch):#| len(CT_patch) != len(location_patch):
             print('smth wrong')
 
-        return CT_patch, GTv_patch, Penalize_patch,location_patch, loss_coef
+        return CT_patch, GTv_patch, Penalize_patch, loss_coef
 
     # --------------------------------------------------------------------------------------------------------
     def return_patches_validation(self, start, end):

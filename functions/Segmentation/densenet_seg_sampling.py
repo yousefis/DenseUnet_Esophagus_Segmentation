@@ -450,7 +450,7 @@ class dense_seg:
                 while(step*self.batch_no<self.no_sample_per_each_itr):
 
                     [train_CT_image_patchs, train_GTV_label,
-                     train_Penalize_patch,location_patch,loss_coef_weights] = _image_class.return_patches( self.batch_no,point)
+                     train_Penalize_patch,loss_coef_weights] = _image_class.return_patches( self.batch_no,point)
 
 
                     if (len(train_CT_image_patchs)<self.batch_no)|(len(train_GTV_label)<self.batch_no)\
@@ -485,9 +485,10 @@ class dense_seg:
                         settings.patch_list.refine()
                     mutation_counter =100
                     if point % mutation_counter == 0:
-
                         settings.patch_list.intercourse()
-                        # _image_class.read_patches_smart_sampling()
+                        strong_child_CT=[]
+                        strong_child_GTV=[]
+                        strong_child_Penalize=[]
                         if point:
                             for ch in range(len(settings.patch_list.children)):
                                 [loss_samples] = sess.run(
@@ -506,7 +507,10 @@ class dense_seg:
                                            beta: self.beta_coeff
                                            })
                                 if loss_samples<settings.patch_list.worst_patch_list[settings.patch_list.children[ch][0][0]]:
-                                    settings.patch_list.worst_patch_list[ch][0][0] = settings.patch_list.children[ch] #replace parent with child
+                                    # settings.patch_list.worst_patch_list[ch][0][0] = settings.patch_list.children[ch] #replace parent with child
+                                    strong_child_CT=np.hstack((strong_child_CT,settings.patch_list.children[ch][1][1]))
+                                    strong_child_GTV=np.hstack((strong_child_GTV,settings.patch_list.children[ch][1][2]))
+                                    strong_child_Penalize=np.hstack((strong_child_Penalize,settings.patch_list.children[ch][1][3]))
                                 [loss_samples] = sess.run(
                                     [cost],
                                     feed_dict={image: settings.patch_list.children[ch][2][1],
@@ -523,8 +527,14 @@ class dense_seg:
                                                beta: self.beta_coeff
                                                })
                                 if loss_samples<settings.patch_list.worst_patch_list[settings.patch_list.children[ch][1][0]]:
-                                    settings.patch_list.worst_patch_list[ch][1][0] = settings.patch_list.children[ch] #replace parent with child
+                                    # settings.patch_list.worst_patch_list[ch][1][0] = settings.patch_list.children[ch] #replace parent with child
+                                    strong_child_CT = np.hstack((strong_child_CT, settings.patch_list.children[ch][2][1]))
+                                    strong_child_GTV = np.hstack((strong_child_GTV, settings.patch_list.children[ch][2][2]))
+                                    strong_child_Penalize = np.hstack((strong_child_Penalize, settings.patch_list.children[ch][2][3]))
 
+                            settings.bunch_CT_patches = np.hstack((settings.bunch_CT_patches,strong_child_CT))
+                            settings.bunch_GTV_patches = np.hstack((settings.bunch_GTV_patches,strong_child_GTV))
+                            settings.bunch_Penalize_patches = np.hstack((settings.bunch_Penalize_patches,strong_child_Penalize))
                     elapsed=time.time()-tic
 
 
