@@ -33,7 +33,7 @@ GPU= tf.test.is_gpu_available(
 
 now = datetime.now() # current date and time
 date_time = now.strftime("%m%d%Y_%H")
-
+print('-train1-'+date_time+str(fold))
 dc12=dense_seg( data=2,
                      # densnet_unet_config=[1,3,5,3,1],
                      densnet_unet_config=[3,3,5,3,3],
