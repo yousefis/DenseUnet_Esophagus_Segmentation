@@ -4,7 +4,7 @@ class smart_patching:
     def __init__(self):
         # self.node = collections.namedtuple('node','loss location')
         self.patch_list = []
-        self.max_elements = 14
+        self.max_elements = 6
         self.worst_patch_list=[]
         random.seed(90)
         self.children=[]
@@ -19,7 +19,7 @@ class smart_patching:
             return
         # if len(self.worst_patch_list):
         self.worst_patch_list=self.worst_patch_list+self.patch_list
-        self.worst_patch_list =  (list(sorted(self.worst_patch_list, key=lambda x: x[-1])[0:self.max_elements]))
+        self.worst_patch_list =  (list(sorted(self.worst_patch_list, key=lambda x: x[-1],reverse=True)[0:self.max_elements]))
         # else:
         #     self.worst_patch_list = (sorted(self.patch_list, key=lambda x: x[-1])[0: self.max_elements])
         self.patch_list.clear()

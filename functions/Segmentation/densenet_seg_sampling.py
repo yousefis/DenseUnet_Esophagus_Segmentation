@@ -480,16 +480,19 @@ class dense_seg:
                                                                                 })
 
                     settings.patch_list.append(loss_train1,train_CT_image_patchs, train_GTV_label, train_Penalize_patch)
-                    refine_counter=50
+                    refine_counter=20
                     if point % refine_counter == 0: # every refine_counter%50 iteration keep the worse batches in the list
+                        print('Refine!')
                         settings.patch_list.refine()
-                    mutation_counter =100
+                    mutation_counter =40
                     if point % mutation_counter == 0:
+                        print('intercourse!')
                         settings.patch_list.intercourse()
                         strong_child_CT=[]
                         strong_child_GTV=[]
                         strong_child_Penalize=[]
                         if point:
+                            print('replacement!')
                             for ch in range(len(settings.patch_list.children)):
                                 [loss_samples] = sess.run(
                                     [cost],
@@ -541,12 +544,15 @@ class dense_seg:
                                         strong_child_CT=np.vstack((strong_child_CT,np.squeeze(settings.patch_list.children[ch][2][0])))
                                         strong_child_GTV=np.vstack((strong_child_GTV,np.squeeze(settings.patch_list.children[ch][2][1])))
                                         strong_child_Penalize=np.vstack((strong_child_Penalize,np.squeeze(settings.patch_list.children[ch][2][2])))
-                            try:
-                                settings.bunch_CT_patches = np.hstack((settings.bunch_CT_patches,strong_child_CT))
-                                settings.bunch_GTV_patches = np.hstack((settings.bunch_GTV_patches,strong_child_GTV))
-                                settings.bunch_Penalize_patches = np.hstack((settings.bunch_Penalize_patches,strong_child_Penalize))
-                            except:
-                                o=1
+                                        print('strong_child_Penalize len: ' + str(len(strong_child_Penalize)))
+                            # try:
+                            print('<list len: ' + str(len(settings.bunch_CT_patches)))
+                            settings.bunch_CT_patches = np.vstack((settings.bunch_CT_patches,strong_child_CT))
+                            settings.bunch_GTV_patches = np.vstack((settings.bunch_GTV_patches,strong_child_GTV[:,:,:,:,1].astype(np.uint8)))
+                            settings.bunch_Penalize_patches = np.vstack((settings.bunch_Penalize_patches,strong_child_Penalize))
+                            print('list len: '+str(len(settings.bunch_CT_patches))+'>')
+                            # except:
+                            #     o=1
                             strong_child_CT=[]
                             strong_child_GTV=[]
                             strong_child_Penalize=[]
