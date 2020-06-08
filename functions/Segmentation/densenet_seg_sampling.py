@@ -545,14 +545,14 @@ class dense_seg:
                                         strong_child_GTV=np.vstack((strong_child_GTV,np.squeeze(settings.patch_list.children[ch][2][1])))
                                         strong_child_Penalize=np.vstack((strong_child_Penalize,np.squeeze(settings.patch_list.children[ch][2][2])))
                                         print('strong_child_Penalize len: ' + str(len(strong_child_Penalize)))
-                            # try:
-                            print('<list len: ' + str(len(settings.bunch_CT_patches)))
-                            settings.bunch_CT_patches = np.vstack((settings.bunch_CT_patches,strong_child_CT))
-                            settings.bunch_GTV_patches = np.vstack((settings.bunch_GTV_patches,strong_child_GTV[:,:,:,:,1].astype(np.uint8)))
-                            settings.bunch_Penalize_patches = np.vstack((settings.bunch_Penalize_patches,strong_child_Penalize))
-                            print('list len: '+str(len(settings.bunch_CT_patches))+'>')
-                            # except:
-                            #     o=1
+                            try:
+                                print('<list len: ' + str(len(settings.bunch_CT_patches)))
+                                settings.bunch_CT_patches = np.vstack((settings.bunch_CT_patches,strong_child_CT))
+                                settings.bunch_GTV_patches = np.vstack((settings.bunch_GTV_patches,strong_child_GTV[:,:,:,:,1].astype(np.uint8)))
+                                settings.bunch_Penalize_patches = np.vstack((settings.bunch_Penalize_patches,strong_child_Penalize))
+                                print('list len: '+str(len(settings.bunch_CT_patches))+'>')
+                            except:
+                                o=1
                             strong_child_CT=[]
                             strong_child_GTV=[]
                             strong_child_Penalize=[]
