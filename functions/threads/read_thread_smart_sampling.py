@@ -106,7 +106,6 @@ class read_thread(threading.Thread):
                             # self.mutex.release()
                             self.finish_thread()
                 finally:
-                    a=1
                     # settings.mutex.release()
                     time.sleep(1)
                     # print('release2')
