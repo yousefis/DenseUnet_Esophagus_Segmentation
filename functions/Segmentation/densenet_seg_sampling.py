@@ -546,10 +546,15 @@ class dense_seg:
                                         strong_child_Penalize=np.vstack((strong_child_Penalize,np.squeeze(settings.patch_list.children[ch][2][2])))
                                         print('strong_child_Penalize len: ' + str(len(strong_child_Penalize)))
                             try:
+
                                 print('<list len: ' + str(len(settings.bunch_CT_patches)))
+                                print('train_queue.acquire')
+                                settings.train_queue.acquire()
                                 settings.bunch_CT_patches = np.vstack((settings.bunch_CT_patches,strong_child_CT))
                                 settings.bunch_GTV_patches = np.vstack((settings.bunch_GTV_patches,strong_child_GTV[:,:,:,:,1].astype(np.uint8)))
                                 settings.bunch_Penalize_patches = np.vstack((settings.bunch_Penalize_patches,strong_child_Penalize))
+                                settings.train_queue.release()
+                                print('train_queue.release')
                                 print('list len: '+str(len(settings.bunch_CT_patches))+'>')
                             except:
                                 o=1

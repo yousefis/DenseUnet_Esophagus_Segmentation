@@ -70,6 +70,7 @@ class read_thread(threading.Thread):
                                 &(len(settings.bunch_CT_patches_vl2)>0)
                                 &(len(settings.bunch_Penalize_patches_vl2)>0)
                                 &(len(settings.bunch_GTV_patches_vl2)>0)  ):
+                            
                             settings.bunch_CT_patches_vl = settings.bunch_CT_patches_vl2
                             settings.bunch_CT_patches_vl2 = []
 
@@ -85,6 +86,7 @@ class read_thread(threading.Thread):
                                 &(len(settings.bunch_GTV_patches_vl2) > 0)\
                                 &(len(settings.bunch_GTV_patches_vl2) > 0)\
                                 &(len(settings.bunch_Penalize_patches_vl2) > 0)):
+                            settings.train_queue.acquire()
                             settings.bunch_CT_patches_vl = np.vstack((settings.bunch_CT_patches_vl,settings.bunch_CT_patches_vl2))
                             settings.bunch_CT_patches_vl2 = []
 
@@ -93,6 +95,7 @@ class read_thread(threading.Thread):
 
                             settings.bunch_Penalize_patches_vl = np.vstack((settings.bunch_Penalize_patches_vl, settings.bunch_Penalize_patches_vl2))
                             settings.bunch_Penalize_patches_vl2 = []
+                            settings.train_queue.release()
                             print('settings.bunch_CT_patches_vl lEN2: %d' % (len(settings.bunch_CT_patches_vl)))
 
                         if len(settings.bunch_GTV_patches_vl)<self.validation_sample_no:
