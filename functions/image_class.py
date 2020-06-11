@@ -383,15 +383,11 @@ class image_class:
         print(rand_image_no)
 
         for img_index in range(len(rand_image_no)):
-            deform_int = random.uniform(0, 1)
+            # deform_int = random.uniform(0, 1)
             deform = 0
             max_dis=0
-
-
-
             imm = self.read_image(rand_image_no[img_index], deform=deform,max_dis=max_dis)
             if len(imm) == 0:
-
                 continue
 
             self.collection.append(imm)

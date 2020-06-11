@@ -482,11 +482,12 @@ class dense_seg:
                     settings.patch_list.append(loss_train1,train_CT_image_patchs, train_GTV_label, train_Penalize_patch)
                     refine_counter=20
                     if point % refine_counter == 0: # every refine_counter%50 iteration keep the worse batches in the list
-                        print('Refine!')
+                        print('<Refine!')
                         settings.patch_list.refine()
+                        print('Refine!>')
                     mutation_counter =40
                     if point % mutation_counter == 0:
-                        print('intercourse!')
+                        print('<intercourse!')
                         settings.patch_list.intercourse()
                         strong_child_CT=[]
                         strong_child_GTV=[]
@@ -562,6 +563,7 @@ class dense_seg:
                             strong_child_GTV=[]
                             strong_child_Penalize=[]
                             settings.patch_list.clear_lists()
+                        print('intercourse!>')
                     elapsed=time.time()-tic
 
 
