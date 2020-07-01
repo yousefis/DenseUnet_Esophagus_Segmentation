@@ -19,6 +19,18 @@ def gaussian_mask(u, s, d, R, C):
     # we add eps for numerical stability
     normalised_mask = mask / (tf.reduce_sum(mask, 1, keep_dims=True) + 1e-8)
     return normalised_mask
+def spatial_transformer(img_tensor, transform_params, crop_size):
+    """
+    :param img_tensor: tf.Tensor of size (batch_size, Height, Width, channels)
+    :param transform_params: tf.Tensor of size (batch_size, 4), where params are  (scale_y, shift_y, scale_x, shift_x)
+    :param crop_size): tuple of 2 ints, size of the resulting crop
+    """
+    constraints = snt.AffineWarpConstraints.no_shear_2d()
+    img_size = img_tensor.shape.as_list()[1:]
+    warper = snt.AffineGridWarper(img_size, crop_size, constraints)
+    grid_coords = warper(transform_params)
+    glimpse = snt.resampler(img_tensor[..., tf.newaxis], grid_coords)
+    return glimpse
 def gaussian_glimpse(img_tensor, transform_params, crop_size):
     """
     :param img_tensor: tf.Tensor of size (batch_size, Height, Width, channels)
