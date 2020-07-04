@@ -112,8 +112,13 @@ class _densenet_unet:
                 bn2 = tf.layers.batch_normalization(db_conv2, training=is_training_bn,renorm=False)
                 bn2 = tf.nn.leaky_relu(bn2)
                 db_conv2=bn2
-
-        db_concat = tf.concat([input, db_conv2], 4)
+        with tf.name_scope(name+'_attention'):
+            g_max_pool1 =tf.keras.layers.GlobalMaxPool3D(data_format='channels_last')(db_conv2)
+            dense1= tf.layers.dense(g_max_pool1, int(int(g_max_pool1.shape[-1])/2), tf.nn.relu)
+            dense2= tf.layers.dense(dense1, g_max_pool1.shape[-1], tf.nn.relu)
+            sigmoid= tf.nn.sigmoid(dense2)
+            result=tf.multiply(tf.expand_dims(tf.expand_dims(tf.expand_dims(sigmoid,1),1) ,1)  ,db_conv2)
+        db_concat = tf.concat([input, result], 4)
         return db_concat
 
 
@@ -177,7 +182,7 @@ class _densenet_unet:
         # dl2 = dl3_1 * 2 + 1
         # dl2_1 = dl2 - 2
 
-        # dim2 = 73
+        # dim2 = 63
         # db_size1 = np.int32(dim2)
         # db_size2 = np.int32(db_size1 / 2)
         # db_size3 = np.int32(db_size2 / 2)

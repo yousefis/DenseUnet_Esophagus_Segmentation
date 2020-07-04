@@ -33,7 +33,7 @@ def submit_job():
     # Slurm
     setting['cluster_MemPerCPU'] = 6200   #2200  # 6200
     setting['cluster_Partition'] = queue             # 'gpu', 'LKEBgpu'
-    setting['cluster_NodeList'] = 'res-hpc-lkeb05'    # None, LKEBgpu: ['res-hpc-lkeb03', 'res-hpc-lkeb02', 'res-hpc-gpu01']
+    setting['cluster_NodeList'] = 'res-hpc-lkeb03'    # None, LKEBgpu: ['res-hpc-lkeb03', 'res-hpc-lkeb02', 'res-hpc-gpu01']
     setting['cluster_NumberOfCPU'] = 7#10 #3               # Number of CPU per job
     setting['cluster_where_to_run'] = 'Cluster'      # 'Cluster', 'Auto'
     setting['cluster_venv_slurm'] = '/exports/lkeb-hpc/syousefi/Programs/'+TF+'/bin/activate'  # venv path
@@ -48,7 +48,7 @@ def submit_job():
     # A backup from all files are created. So later if you modify the codes, this does not affect the submitted code.
     backup_script_address, backup_number = backup_script(script_address=os.path.realpath(__file__), main_script=main_script, folder_script  =folder_script,net_config=net_config)
     ext = ''.join(str(net_config[e]) for e in range(len(net_config)))
-    job_name = 'distancemap_attention'+ext+'_'+str(backup_number)
+    job_name = 'attention'+ext+'_'+str(backup_number)
     write_and_submit_job(setting, manager=manager, job_name=job_name, script_address=backup_script_address)
 
 
@@ -105,7 +105,7 @@ def backup_script(script_address, main_script, folder_script, net_config):
     date_now = datetime.datetime.now()
     backup_number = '{:04d}{:02d}{:02d}_{:02d}{:02d}{:02d}'.\
         format(date_now.year, date_now.month, date_now.day, date_now.hour, date_now.minute, date_now.second)
-    backup_root_folder = script_folder + 'CodeCluster_new_data/new'+ext+'_07_coeff100/'
+    backup_root_folder = script_folder + 'CodeCluster_new_data/new'+ext+'_attentiondenseblock02_nomap/'
     backup_folder = backup_root_folder + 'backup-' + str(backup_number) + '/'
     os.makedirs(backup_folder)
     shutil.copy(script_address, backup_folder)

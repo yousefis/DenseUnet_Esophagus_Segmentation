@@ -161,7 +161,7 @@ class _densenet_unet:
 
     # ========================
 
-    def dens_net(self, image, is_training, dropout_rate1,dropout_rate2, dim,is_training_bn):
+    def dens_net(self, image, is_training, dropout_rate1,dropout_rate2, dim,is_training_bn,dilation_rate=(1,1,1)):
         # x = 527
         # l2 = x / 2
         # l3 = l2 / 2

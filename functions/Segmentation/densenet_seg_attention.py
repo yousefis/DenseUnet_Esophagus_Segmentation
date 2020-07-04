@@ -199,7 +199,7 @@ class dense_seg:
         image = tf.placeholder(tf.float32, shape=[None, None, None, None, 1])
         label = tf.placeholder(tf.float32, shape=[None, None, None, None, 2])
         penalize = tf.placeholder(tf.float32, shape=[None, None, None, None,1])
-        # loss_coef = tf.placeholder(tf.float32, shape=[None, 2]) # shape: batchno * 2 values for each class
+        loss_coef = tf.placeholder(tf.float32, shape=[None, 2]) # shape: batchno * 2 values for each class
         alpha = tf.placeholder(tf.float32, name='alpha') # background coeff
         beta = tf.placeholder(tf.float32, name='beta') # tumor coeff
 
@@ -282,7 +282,7 @@ class dense_seg:
 
         '''AdamOptimizer:'''
         with tf.name_scope('cost'):
-            penalize_weight=.01
+            penalize_weight=0
             [ penalized_loss,
              soft_dice_coef,logt,lbl]=self.loss_instance.dice_plus_distance_penalize(logits=y, labels=label,penalize=penalize)
             cost = tf.reduce_mean((1.0 - soft_dice_coef[1])+penalize_weight*penalized_loss, name="cost")
