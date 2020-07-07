@@ -7,6 +7,7 @@ import tensorflow as tf
 # tf.disable_v2_behavior()
 import os
 
+#attention only channel
 
 
 
