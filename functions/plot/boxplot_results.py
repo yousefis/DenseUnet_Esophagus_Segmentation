@@ -26,6 +26,8 @@ test_path='/srv/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/Log_2018-
 test_path='/srv/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/Log_2018-08-15/00_Seperate_training_2nddataset/13331_0.75_4-cross-noRand-train2test2--6/'
 test_path='/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/Log_2019_09_23/Dataset3/33533_0.75_4-train1-04172020_140/'
 test_path='/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/Log_2019_09_23/Dataset3/33533_0.75_4-train1-04252020_220/'
+test_path='/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/Log_2019_09_23/Dataset3/33533_0.75_4-train1-07052020_000/'
+test_path='/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/Log_2019_09_23/Dataset3/33533_0.75_4-train1-07032020_170/'
 # test_path='/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/Log_2019_09_23/Dataset3/33533_0.75_4-train1-04302020_090/'
 # test_path='/srv/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/Log_2018-08-15/00_Seperate_training_1stdataset/13331_0.75_4-cross-noRand-train1-104/'
 eps=10e-6
@@ -259,21 +261,21 @@ if __name__=='__main__':
     print('===============================')
     print('===============================')
 
-    # Parallel(n_jobs=num_cores)(
-    #         delayed(get_largest_component)(predicted_image_path=result[i],
-    #                                        out_image_name=result[i].split('_result.mha')[0]+'_result_lc.mha',
-    #                                      )
-    #         for i in range(len(result)))#
-    # print('end get_largest_component')
+    Parallel(n_jobs=num_cores)(
+            delayed(get_largest_component)(predicted_image_path=result[i],
+                                           out_image_name=result[i].split('_result.mha')[0]+'_result_lc.mha',
+                                         )
+            for i in range(len(result)))#
+    print('end get_largest_component')
     print('===============================')
     print('===============================')
 
-    # Parallel(n_jobs=num_cores)(
-    #         delayed(overlapped_component)(predicted_image_path=result[i],
-    #                                       overlapped_name=result[i].split('_result.mha')[0]+'_result_ov.mha'
-    #                                      )
-    #         for i in range(len(result)))#
-    # print('end overlapped_component')
+    Parallel(n_jobs=num_cores)(
+            delayed(overlapped_component)(predicted_image_path=result[i],
+                                          overlapped_name=result[i].split('_result.mha')[0]+'_result_ov.mha'
+                                         )
+            for i in range(len(result)))#
+    print('end overlapped_component')
     print('===============================')
     print('===============================')
     res=Parallel(n_jobs=num_cores)(
