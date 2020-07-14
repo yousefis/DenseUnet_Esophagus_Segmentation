@@ -192,11 +192,11 @@ class dense_seg:
         _read_thread.start()
         # ======================================
         # pre_bn=tf.placeholder(tf.float32,shape=[None,None,None,None,None])
-        image=tf.placeholder(tf.float32,shape=[self.batch_no,self.patch_window,self.patch_window,self.patch_window,1])
+        # image=tf.placeholder(tf.float32,shape=[self.batch_no,self.patch_window,self.patch_window,self.patch_window,1])
         # label=tf.placeholder(tf.float32,shape=[self.batch_no_validation,self.GTV_patchs_size,self.GTV_patchs_size,self.GTV_patchs_size,2])
         # loss_coef=tf.placeholder(tf.float32,shape=[self.batch_no_validation,1,1,1])
 
-        # image = tf.placeholder(tf.float32, shape=[None, None, None, None, 1])
+        image = tf.placeholder(tf.float32, shape=[None, None, None, None, 1])
         label = tf.placeholder(tf.float32, shape=[None, None, None, None, 2])
         penalize = tf.placeholder(tf.float32, shape=[None, None, None, None,1])
         loss_coef = tf.placeholder(tf.float32, shape=[None, 2]) # shape: batchno * 2 values for each class
