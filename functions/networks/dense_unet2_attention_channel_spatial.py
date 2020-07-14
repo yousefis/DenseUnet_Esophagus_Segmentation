@@ -38,6 +38,23 @@ class _densenet_unet:
                          pool_size=[2, 2, 2],
                          strides=(2, 2, 2),
                          bn_flag = False):
+        '''
+        :param dense_out1: output of previous denseblock
+        :param transition_name: scope name
+        :param conv_name: name of conv layer
+        :param is_training_bn: bacth norm flag
+        :param conv_pool_name: name of conv pool
+        :param db_size: used for unet struct
+        :param crop_size: used for unet struct
+        :param kernel_size: kernel size
+        :param padding: either same or valid
+        :param activation: activation function
+        :param dilation_rate: dilation rate
+        :param pool_size: size of pooling
+        :param strides: stride size for downsampling
+        :param bn_flag: batch norm flag
+        :return:
+        '''
         with tf.name_scope(transition_name):
             filter = int(dense_out1.get_shape()[4].value * self.compres_coef)
             if bn_flag==False:
@@ -78,7 +95,19 @@ class _densenet_unet:
                     concat_flag=0,
                     bn_flag=False,
                     dilation_rate=1):
-
+        '''
+        :param input: input which comes from the output of the previous block
+        :param feature_size: a vector includes the size if featuremaps
+        :param is_training_bn: a flag to trigger batch norm trainable flag
+        :param padding: either same or valid
+        :param activation: activation function
+        :param name: name f scope
+        :param flag:  -
+        :param concat_flag: -
+        :param bn_flag: a flag to trigger batch norm trainable flag
+        :param dilation_rate: -
+        :return:
+        '''
         if bn_flag==False:
             with tf.name_scope(name):
                 db_conv1 = tf.layers.conv3d(input,
@@ -145,6 +174,22 @@ class _densenet_unet:
                    flag=0,
                    concat_flag=0,
                    feature_size=[],bn_flag=False,dilation_rate=1):
+        '''
+        :param loop: number of dense connectivity pattern
+        :param input: input of the block
+        :param crop_size: is used in unet structure
+        :param db_size:
+        :param is_training_bn: batch norm flag
+        :param padding:
+        :param activation: activation function
+        :param name: scope name
+        :param flag: -
+        :param concat_flag: -
+        :param feature_size: size of feature maps
+        :param bn_flag: batch norm flag
+        :param dilation_rate: dilation rate
+        :return:
+        '''
         with tf.name_scope(name):
             output = input
             for i in range(loop):
@@ -158,7 +203,7 @@ class _densenet_unet:
                                           is_training_bn=is_training_bn,
                                           bn_flag=bn_flag,
                                           dilation_rate=dilation_rate)
-
+        # in unet struct we should concat the output of this block with its corresponding level
         cropped = output[:,
                   tf.to_int32(db_size / 2) - tf.to_int32(crop_size / 2) - 1:
                   tf.to_int32(db_size / 2) + tf.to_int32(crop_size / 2),
