@@ -29,6 +29,7 @@ class _densenet_unet:
                          transition_name,
                          conv_name,
                          is_training_bn,
+                         conv_pool_name,
                          db_size,crop_size,
                          kernel_size=[1, 1, 1],
                          padding='same',
@@ -37,22 +38,6 @@ class _densenet_unet:
                          pool_size=[2, 2, 2],
                          strides=(2, 2, 2),
                          bn_flag = False):
-        '''
-        :param dense_out1: output of previous denseblock
-        :param transition_name: scope name
-        :param conv_name: name of conv layer
-        :param is_training_bn: bacth norm flag
-        :param db_size: used for unet struct
-        :param crop_size: used for unet struct
-        :param kernel_size: kernel size
-        :param padding: either same or valid
-        :param activation: activation function
-        :param dilation_rate: dilation rate
-        :param pool_size: size of pooling
-        :param strides: stride size for downsampling
-        :param bn_flag: batch norm flag
-        :return:
-        '''
         with tf.name_scope(transition_name):
             filter = int(dense_out1.get_shape()[4].value * self.compres_coef)
             if bn_flag==False:
@@ -93,19 +78,7 @@ class _densenet_unet:
                     concat_flag=0,
                     bn_flag=False,
                     dilation_rate=1):
-        '''
-        :param input: input which comes from the output of the previous block
-        :param feature_size: a vector includes the size if featuremaps
-        :param is_training_bn: a flag to trigger batch norm trainable flag
-        :param padding: either same or valid
-        :param activation: activation function
-        :param name: name f scope
-        :param flag:  -
-        :param concat_flag: -
-        :param bn_flag: a flag to trigger batch norm trainable flag
-        :param dilation_rate: -
-        :return:
-        '''
+
         if bn_flag==False:
             with tf.name_scope(name):
                 db_conv1 = tf.layers.conv3d(input,
@@ -139,14 +112,14 @@ class _densenet_unet:
                 bn2 = tf.layers.batch_normalization(db_conv2, training=is_training_bn,renorm=False)
                 bn2 = tf.nn.leaky_relu(bn2)
                 db_conv2=bn2
-        with tf.name_scope(name+'_channel_attention'):
-            g_max_pool1 =tf.keras.layers.GlobalMaxPool3D(data_format='channels_last')(db_conv2)
-            dense1= tf.layers.dense(g_max_pool1, int(int(g_max_pool1.shape[-1])/2), tf.nn.relu)
-            dense2= tf.layers.dense(dense1, g_max_pool1.shape[-1], tf.nn.relu)
-            sigmoid1= tf.nn.sigmoid(dense2)
-            result1=tf.multiply(tf.expand_dims(tf.expand_dims(tf.expand_dims(sigmoid1,1),1) ,1)  ,db_conv2)
+        # with tf.name_scope(name+'_channel_attention'):
+        #     g_max_pool1 =tf.keras.layers.GlobalMaxPool3D(data_format='channels_last')(db_conv2)
+        #     dense1= tf.layers.dense(g_max_pool1, int(int(g_max_pool1.shape[-1])/2), tf.nn.relu)
+        #     dense2= tf.layers.dense(dense1, g_max_pool1.shape[-1], tf.nn.relu)
+        #     sigmoid1= tf.nn.sigmoid(dense2)
+        #     result1=tf.multiply(tf.expand_dims(tf.expand_dims(tf.expand_dims(sigmoid1,1),1) ,1)  ,db_conv2)
         with tf.name_scope(name + '_spatial_attention'):
-            ave_max_pool1 = tf.concat([tf.expand_dims(tf.reduce_mean(result1,axis=-1),-1),tf.expand_dims(tf.reduce_max(result1,-1),-1)],4)
+            ave_max_pool1 = tf.concat([tf.expand_dims(tf.reduce_mean(db_conv2,axis=-1),-1),tf.expand_dims(tf.reduce_max(db_conv2,-1),-1)],4)
             ave_max_pool_conv = tf.layers.conv3d(ave_max_pool1,
                                         filters=1,
                                         kernel_size=3,
@@ -156,7 +129,7 @@ class _densenet_unet:
             bn3 = tf.layers.batch_normalization(ave_max_pool_conv, training=is_training_bn, renorm=False)
             bn3 = tf.nn.leaky_relu(bn3)
             sigmoid2 = tf.nn.sigmoid(bn3)
-            result2 = tf.multiply(sigmoid2, result1)
+            result2 = tf.multiply(sigmoid2, db_conv2)
 
         db_concat = tf.concat([input, result2], 4)
         return db_concat
@@ -172,22 +145,6 @@ class _densenet_unet:
                    flag=0,
                    concat_flag=0,
                    feature_size=[],bn_flag=False,dilation_rate=1):
-        '''
-        :param loop: number of dense connectivity pattern
-        :param input: input of the block
-        :param crop_size: is used in unet structure
-        :param db_size:
-        :param is_training_bn: batch norm flag
-        :param padding:
-        :param activation: activation function
-        :param name: scope name
-        :param flag: -
-        :param concat_flag: -
-        :param feature_size: size of feature maps
-        :param bn_flag: batch norm flag
-        :param dilation_rate: dilation rate
-        :return:
-        '''
         with tf.name_scope(name):
             output = input
             for i in range(loop):
@@ -201,7 +158,7 @@ class _densenet_unet:
                                           is_training_bn=is_training_bn,
                                           bn_flag=bn_flag,
                                           dilation_rate=dilation_rate)
-        # in unet struct we should concat the output of this block with its corresponding level
+
         cropped = output[:,
                   tf.to_int32(db_size / 2) - tf.to_int32(crop_size / 2) - 1:
                   tf.to_int32(db_size / 2) + tf.to_int32(crop_size / 2),
@@ -219,7 +176,21 @@ class _densenet_unet:
         #           np.int32(db_size / 2) + np.int32(crop_size / 2), :]
         return output, cropped
 
-
+    def spatial_attention(self,input,is_training_bn,name):
+        with tf.name_scope(name+'skip_attention'):
+            ave_max_pool = tf.concat([tf.expand_dims(tf.reduce_mean(input, axis=-1), -1),
+                                       tf.expand_dims(tf.reduce_max(input, -1), -1)], 4)
+            ave_max_pool_conv = tf.layers.conv3d(ave_max_pool,
+                                                 filters=1,
+                                                 kernel_size=3,
+                                                 padding='same',
+                                                 activation=None,
+                                                 dilation_rate=1)
+            bn = tf.layers.batch_normalization(ave_max_pool_conv, training=is_training_bn, renorm=False)
+            bn = tf.nn.leaky_relu(bn)
+            sigmoid = tf.nn.sigmoid(bn)
+            skip_att = tf.multiply(sigmoid, input)
+        return skip_att
     # ========================
 
     def dens_net(self, image, is_training, dropout_rate1,dropout_rate2, dim,is_training_bn,dilation_rate=(1,1,1)):
@@ -322,6 +293,7 @@ class _densenet_unet:
 
         [pool1, conc1] = self.transition_layer(dense_out1, 'transition_1',
                                       conv_name='conv1'+self.log_ext,
+                                      conv_pool_name='conv_pool_name1'+self.log_ext,
                                       db_size=db_size1, crop_size=crop_size2,
                                       kernel_size=[1, 1, 1], padding='same',
                                       activation=activation,
@@ -348,6 +320,7 @@ class _densenet_unet:
 
         [pool2,conc2] = self.transition_layer(dense_out2, 'transition_2',
                                       conv_name='conv2'+self.log_ext,
+                                      conv_pool_name='conv_pool_name2'+self.log_ext,
                                       db_size=db_size2, crop_size=crop_size1,
                                       kernel_size=[1, 1, 1],
                                       padding='same',
@@ -392,7 +365,10 @@ class _densenet_unet:
                                              strides=(2, 2, 2),
                                              padding='valid',
                                              use_bias=False)
-        conc11=tf.concat([conc2, deconv1], 4)
+
+        skip_attention1 = self.spatial_attention( input=conc2, is_training_bn=is_training_bn, name='skip_attention1')
+
+        conc11=tf.concat([skip_attention1, deconv1], 4)
 
 
         [dense_out5, conctmp] = self.dense_loop(loop=self.config[3],
@@ -422,7 +398,9 @@ class _densenet_unet:
         # =========================================================
         deconv2 = tf.layers.conv3d_transpose(bn3, filters=int(conv2.shape[4].value/2), kernel_size=[3, 3, 3], strides=(2, 2, 2),
                                              padding='valid', use_bias=False)
-        conc22 = tf.concat([conc1, deconv2], 4)
+
+        skip_attention2 = self.spatial_attention(input=conc1, is_training_bn=is_training_bn, name='skip_attention2')
+        conc22 = tf.concat([skip_attention2, deconv2], 4)
         [dense_out6, conctmp] = self.dense_loop(loop=self.config[4],
                                                 input=conc22,
                                                 crop_size=crop_size0,
