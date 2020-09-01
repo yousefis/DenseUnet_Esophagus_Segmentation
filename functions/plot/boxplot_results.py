@@ -9,9 +9,10 @@ import numpy as np
 from os import listdir
 from os.path import isfile, join
 from scipy.ndimage import morphology
-from measures.measures import DSC_MSD_HD95
 sys.path.append("..") # Adds higher directory to python modules path.
 sys.path.append("../..") # Adds higher directory to python modules path.
+sys.path.append("../measures/") # Adds higher directory to python modules path.
+from measures.measures import DSC_MSD_HD95
 
 # from read_data import _read_data
 vali=0
@@ -24,12 +25,20 @@ test_path='/srv/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/Log_2018-
 test_path='/srv/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/Log_2018-08-15/00_Seperate_training_1stdataset/13331_0.75_4-cross-noRand-train1-107/'
 test_path='/srv/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/Log_2018-08-15/cross_validation/13331_0.75_4-cross-NoRand-tumor25-004/'
 test_path='/srv/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/Log_2018-08-15/00_Seperate_training_2nddataset/13331_0.75_4-cross-noRand-train2test2--6/'
-test_path='/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/Log_2019_09_23/Dataset3/33533_0.75_4-train1-04172020_140/'
-test_path='/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/Log_2019_09_23/Dataset3/33533_0.75_4-train1-04252020_220/'
+# test_path='/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/Log_2019_09_23/Dataset3/33533_0.75_4-train1-04172020_140/'
+# test_path='/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/Log_2019_09_23/Dataset3/33533_0.75_4-train1-04252020_220/'=
 test_path='/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/Log_2019_09_23/Dataset3/33533_0.75_4-train1-07052020_000/'
-test_path='/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/Log_2019_09_23/Dataset3/33533_0.75_4-train1-07032020_170/'
+# test_path='/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/Log_2019_09_23/Dataset3/33533_0.75_4-train1-07032020_170/'
+# test_path='/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/Log_2019_09_23/Dataset3/33533_0.75_4-train1-07102020_140/'=
+# test_path='/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/Log_2019_09_23/Dataset3/33533_0.75_4-train1-07142020_020/'=
 # test_path='/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/Log_2019_09_23/Dataset3/33533_0.75_4-train1-04302020_090/'
 # test_path='/srv/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/Log_2018-08-15/00_Seperate_training_1stdataset/13331_0.75_4-cross-noRand-train1-104/'
+
+test_path='/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/Log_2019_09_23/Dataset3/33533_0.75_4-train1-08052020_140/'
+test_path='/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/Log_2019_09_23/Dataset3/33533_0.75_4-train1-08132020_10590/'
+test_path='/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/Log_2019_09_23/Dataset3/33533_0.75_4-train1-08132020_120/'
+test_path='/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/Log_2019_09_23/Dataset3/33533_0.75_4-train1-08242020_1950240/'
+test_path='/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/Log_2019_09_23/Dataset3/33533_0.75_4-train1-08242020_1950240/'
 eps=10e-6
 def surfd(input1, input2, sampling=1, connectivity=1):
     input_1 = np.atleast_1d(input1.astype(np.bool))
@@ -171,6 +180,7 @@ def overlapped_component(predicted_image_path,overlapped_name) :
 def compute_tp_tn_fp_fn(result,Gtv,
                         overlapped_name ,result_lc,
                         ):
+    print(result.split('/')[-1])
     sitk_res=sitk.ReadImage(result)
     res = sitk.GetArrayFromImage(sitk_res)
     sitk_res_lc=sitk.ReadImage(result_lc)
@@ -234,8 +244,7 @@ def compute_tp_tn_fp_fn(result,Gtv,
 
 
         # print('hd:%f,msd:%f' % (hd, msd))
-        print('%s: f1:%f ' % (result.split('/')[-1], f1[0]
-                                    ))
+        print('%s: f1:%f ' % (result.split('/')[-1], f1[0] ))
     return result.split('/')[-1].split('_result.mha')[0],x
 
 
@@ -253,7 +262,7 @@ if __name__=='__main__':
     dsc=[]
     name_list=[]
 
-    num_cores =  6#multiprocessing.cpu_count()
+    num_cores =  15#multiprocessing.cpu_count()
     print('===============================')
     print('===============================')
     print('num_cores:')

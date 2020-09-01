@@ -18,7 +18,9 @@ def fill_pb_color(bplots,colors,axes):
     for bplot in bplots:
         for patch, color in zip(bplot['boxes'], colors):
             patch.set_facecolor(color)
-    axes.legend([bplot2["boxes"][0], bplot2["boxes"][1], bplot2["boxes"][2], bplot2["boxes"][3]],
+    axes.legend([bplot2["boxes"][0],# bplot2["boxes"][1],
+                 #bplot2["boxes"][2], bplot2["boxes"][3]
+    ],
                    cnn_tags, loc='right', bbox_to_anchor=(1.2, -0.09),
                    fancybox = True, shadow = True, ncol = 5)
 
@@ -45,9 +47,9 @@ def cumulative_dice(axes,cnn_tags,data,title):
                  '0.7$\leq$','0.8$\leq$','0.9$\leq$', '1.0$\leq$'
                 ]
     df = pd.DataFrame({cnn_tags[0]: vec[0],
-                       cnn_tags[1]: vec[1],
-                       cnn_tags[2]: vec[2],
-                       cnn_tags[3]: vec[3],
+                      # cnn_tags[1]: vec[1],
+                       #cnn_tags[2]: vec[2],
+                       #cnn_tags[3]: vec[3],
                        }, index=y_labels)
     # df.plot(ax=axes)
     # axes = df.plot.barh(color=colors)
@@ -69,17 +71,21 @@ def read_xls(xls_path,results,parent_pth,fields):
 #this file shows the boxplots for the journal paper
 if __name__=='__main__':
     parent_pth='/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/Log_2019_09_23/Dataset3/'
-    xls_path=['33533_0.75_4-train1-04252020_220/',  #dice+Nodistancemap
+    xls_path=[
+        # '33533_0.75_4-train1-04252020_220/',  #dice+Nodistancemap
               # '33533_0.75_4-train1-07032020_170/', #dice+distancemap+attebtion channel
-              '33533_0.75_4-train1-07052020_000/',  #dice+attention channel no distancemap
+              # '33533_0.75_4-train1-07052020_000/',  #dice+attention channel no distancemap
               '33533_0.75_4-train1-07142020_020/',  #dice+attention spatial  no distancemap
-              '33533_0.75_4-train1-07102020_140/',  # dice+attention channel+spatial  no distancemap
+              # '33533_0.75_4-train1-07102020_140/',  # dice+attention channel+spatial  no distancemap
               ]
-    cnn_tags=['DilatedDenseUnet',
-              'DilatedDenseChannelAttentionUnet',
+
+    cnn_tags=[
+              # 'DilatedDenseUnet',
+              # 'DilatedDenseChannelAttentionUnet',
               'DilatedDenseSpatialAttentionUnet',
-              'DilatedDenseChannelSpatialAttentionUnet']
-    test_vali=1
+              # 'DilatedDenseChannelSpatialAttentionUnet'
+        ]
+    test_vali=0
     if test_vali==0:
         results='result/'
     else:
@@ -107,8 +113,8 @@ if __name__=='__main__':
     # fill with colors
     colors = ['pink', 'lightblue', 'lightgreen']
     fill_pb_color((bplot1, bplot2), colors, axes[1])
-    hgrid(axes[0],top=200,bottom=0,major_gap=100,minor_gap=20,axis='y')
-    hgrid(axes[1],top=200,bottom=0,major_gap=100,minor_gap=20,axis='y')
+    hgrid(axes[0],top=100,bottom=0,major_gap=50,minor_gap=25,axis='y')
+    hgrid(axes[1],top=100,bottom=0,major_gap=50,minor_gap=25,axis='y')
     fig.suptitle('Mean surface distance', fontsize=16)
     # =============================================
     # # read xls files and fill vectors
@@ -120,8 +126,8 @@ if __name__=='__main__':
     # fill with colors
     colors = ['pink', 'lightblue', 'lightgreen']
     fill_pb_color((bplot1, bplot2), colors, axes[1])
-    hgrid(axes[0], top=250, bottom=0, major_gap=100, minor_gap=20,axis='y')
-    hgrid(axes[1], top=250, bottom=0, major_gap=100, minor_gap=20,axis='y')
+    hgrid(axes[0], top=250, bottom=0, major_gap=50, minor_gap=25,axis='y')
+    hgrid(axes[1], top=150, bottom=0, major_gap=50, minor_gap=25,axis='y')
     fig.suptitle('95% Hausdorff distance', fontsize=16)
 
     # =============================================

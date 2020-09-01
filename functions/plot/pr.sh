@@ -1,9 +1,9 @@
 #!/bin/bash
-#SBATCH --job-name=measures
-#SBATCH --output=/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/Log_2019_09_23/Dataset3/33533_0.75_4-train1-08242020_1950240/result/plot.txt
+#SBATCH --job-name=tst_att
+#SBATCH --output=/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/Log_2019_09_23/Dataset3/33533_0.75_4-train1-08242020_1950240/result/output1.txt
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=15
-#SBATCH --mem-per-cpu=2200
+#SBATCH --mem-per-cpu=4200
 #SBATCH --partition=gpu
 #SBATCH --gres=gpu:1
 #SBATCH --time=0
@@ -18,4 +18,4 @@ echo "on GPU      = $CUDA_VISIBLE_DEVICES"
 echo
 echo "@ $(date)"
 echo
-python /exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/dense_net_3d_segmentation-1-dice-tumor--106/functions/plot/boxplot_results.py --where_to_run Cluster
+python /exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/dense_net_3d_segmentation-1-dice-tumor--106/functions/plot/PR_curve.py --where_to_run Cluster

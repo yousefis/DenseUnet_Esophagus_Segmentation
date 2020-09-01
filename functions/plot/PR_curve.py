@@ -22,11 +22,11 @@ from os import listdir
 from os.path import isfile, join
 from random import shuffle
 
-import datetime
-from densenet_unet import _densenet_unet
-from read_data import _read_data
-from measurements import _measure
-from image_class import image_class
+# import datetime
+# from densenet_unet import _densenet_unet
+# from read_data import _read_data
+# from measurements import _measure
+# from image_class import image_class
 vali=1
 if vali==0:
     out_dir = 'result_vali/'
@@ -36,7 +36,13 @@ test_path='/srv/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/Log_2018-
 
 test_path='/srv/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/Log_2018-08-15/00_Seperate_training_1stdataset/13331_0.75_4-cross-noRand-train1-104/'
 test_path='/srv/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/Log_2018-08-15/00_Seperate_training_1stdataset/13331_0.75_4-cross-noRand-train1-105/'
+test_path='/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/Log_2019_09_23/Dataset3/33533_0.75_4-train1-07142020_020/' #Spatial only
 
+test_path='/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/Log_2019_09_23/Dataset3/33533_0.75_4-train1-07102020_140/' #spatial and channel
+
+test_path='/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/Log_2019_09_23/Dataset3/33533_0.75_4-train1-07052020_000/' #channel
+test_path='/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/Log_2019_09_23/Dataset3/33533_0.75_4-train1-08052020_140/' #surface
+test_path='/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/Log_2019_09_23/Dataset3/33533_0.75_4-train1-08242020_1950240/'
 
 import multiprocessing
 from joblib import Parallel, delayed
@@ -101,7 +107,7 @@ def Recall(TP,TN,FP,FN):
 step=1/200
 threshold_vec=np.arange(0,1.0+2*step,step)
 # threshold_vec=np.arange(0,.3,0.1)
-num_cores = multiprocessing.cpu_count()
+num_cores = 15#multiprocessing.cpu_count()
 
 # volumes=Parallel(n_jobs=num_cores)(
 #         delayed(read_image)(path_fuzzy=path_fuzzy[i],
@@ -132,7 +138,7 @@ for cntr in range(len(path_fuzzy)):
     # Close the Pandas Excel writer and output the Excel file.
     writer.save()
 
-    os.remove(path_fuzzy[cntr])
+    # os.remove(path_fuzzy[cntr])
 
 
 # TP=np.zeros(len(threshold_vec))
