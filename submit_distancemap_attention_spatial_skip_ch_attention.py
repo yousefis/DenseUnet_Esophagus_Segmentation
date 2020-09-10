@@ -33,8 +33,8 @@ def submit_job():
     # Slurm
     setting['cluster_MemPerCPU'] = 6200   #2200  # 6200
     setting['cluster_Partition'] = queue             # 'gpu', 'LKEBgpu'
-    setting['cluster_NodeList'] = 'res-hpc-lkeb05'    # None, LKEBgpu: ['res-hpc-lkeb03', 'res-hpc-lkeb02', 'res-hpc-gpu01']
-    setting['cluster_NumberOfCPU'] = 5#10 #3               # Number of CPU per job
+    setting['cluster_NodeList'] = 'res-hpc-lkeb06'    # None, LKEBgpu: ['res-hpc-lkeb03', 'res-hpc-lkeb02', 'res-hpc-gpu01']
+    setting['cluster_NumberOfCPU'] = 8#10 #3               # Number of CPU per job
     setting['cluster_where_to_run'] = 'Cluster'      # 'Cluster', 'Auto'
     setting['cluster_venv_slurm'] = '/exports/lkeb-hpc/syousefi/Programs/'+TF+'/bin/activate'  # venv path
 
@@ -43,12 +43,12 @@ def submit_job():
 
     if setting['cluster_NodeList'] == 'res-hpc-lkeb02':
         setting['cluster_MemPerCPU'] = 15000
-    main_script = '/run_net_distancemap_attention_spatial.py'
+    main_script = '/run_net_surfacemap_attention_spatial_skip_ch_attention.py'
     folder_script = 'functions'
     # A backup from all files are created. So later if you modify the codes, this does not affect the submitted code.
     backup_script_address, backup_number = backup_script(script_address=os.path.realpath(__file__), main_script=main_script, folder_script  =folder_script,net_config=net_config)
     ext = ''.join(str(net_config[e]) for e in range(len(net_config)))
-    job_name = 'SpatialAttention'+ext+'_'+str(backup_number)
+    job_name = 'ch_skip'+ext+'_'+str(backup_number)
     write_and_submit_job(setting, manager=manager, job_name=job_name, script_address=backup_script_address)
 
 
@@ -64,6 +64,7 @@ def write_and_submit_job(setting, manager, job_name, script_address):
     backup_folder = script_address.rsplit('/', maxsplit=1)[0]
     job_script_folder = backup_folder + '/Jobs/'
     job_output_file = job_script_folder + 'output.txt'
+    print(job_output_file)
     if not os.path.exists(job_script_folder):
         os.makedirs(job_script_folder)
     job_script_address = job_script_folder + 'jobscript_'+manager+'.sh'
@@ -105,7 +106,7 @@ def backup_script(script_address, main_script, folder_script, net_config):
     date_now = datetime.datetime.now()
     backup_number = '{:04d}{:02d}{:02d}_{:02d}{:02d}{:02d}'.\
         format(date_now.year, date_now.month, date_now.day, date_now.hour, date_now.minute, date_now.second)
-    backup_root_folder = script_folder + 'CodeCluster_new_data/new'+ext+'_attentiondenseblock02_nomap_spatial/'
+    backup_root_folder = script_folder + 'CodeCluster_new_data/new'+ext+'_surfacemap_spatial_att_skip_att/'
     backup_folder = backup_root_folder + 'backup-' + str(backup_number) + '/'
     os.makedirs(backup_folder)
     shutil.copy(script_address, backup_folder)

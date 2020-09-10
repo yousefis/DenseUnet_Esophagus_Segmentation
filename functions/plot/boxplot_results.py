@@ -15,7 +15,7 @@ sys.path.append("../measures/") # Adds higher directory to python modules path.
 from measures.measures import DSC_MSD_HD95
 
 # from read_data import _read_data
-vali=0
+vali=1
 if vali==1:
     out_dir = 'result_vali/'
 else:
@@ -39,6 +39,7 @@ test_path='/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/Esophagus
 test_path='/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/Log_2019_09_23/Dataset3/33533_0.75_4-train1-08132020_120/'
 test_path='/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/Log_2019_09_23/Dataset3/33533_0.75_4-train1-08242020_1950240/'
 test_path='/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/Log_2019_09_23/Dataset3/33533_0.75_4-train1-08242020_1950240/'
+test_path='/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/Log_2019_09_23/Dataset3/33533_0.75_4-train1-08272020_161/' #fold1
 eps=10e-6
 def surfd(input1, input2, sampling=1, connectivity=1):
     input_1 = np.atleast_1d(input1.astype(np.bool))
@@ -262,7 +263,7 @@ if __name__=='__main__':
     dsc=[]
     name_list=[]
 
-    num_cores =  15#multiprocessing.cpu_count()
+    num_cores =  10#multiprocessing.cpu_count()
     print('===============================')
     print('===============================')
     print('num_cores:')

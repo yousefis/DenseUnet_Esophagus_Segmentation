@@ -4,6 +4,7 @@ def init():
     global bunch_CT_patches, bunch_GTV_patches,bunch_CT_patches2, bunch_GTV_patches2,mutex,mutex2
     global bunch_CT_patches_vl, bunch_GTV_patches_vl,bunch_CT_patches_vl2, bunch_GTV_patches_vl2, patch_count
     global bunch_Penalize_patches,bunch_Penalize_patches2,bunch_Penalize_patches_vl,bunch_Penalize_patches_vl2
+    global bunch_Surface_patches,bunch_Surface_patches2,bunch_Surface_patches_vl,bunch_Surface_patches_vl2
     global train_queue, read_patche_mutex_tr,read_patche_mutex_vl,tr_isread,vl_isread
     global queue_isready_vl, validation_totalimg_patch, validation_patch_reuse, read_vl_offline, read_off_finished, epochs_no
     global bunch_location_patches,bunch_location_patches2
@@ -27,6 +28,7 @@ def init():
     bunch_CT_patches=[]
     bunch_GTV_patches=[]
     bunch_Penalize_patches=[]
+    bunch_Surface_patches=[]
     bunch_location_patches=[]
     bunch_location_patches2=[]
 
@@ -35,13 +37,16 @@ def init():
     bunch_CT_patches2=[]
     bunch_GTV_patches2=[]
     bunch_Penalize_patches2=[]
+    bunch_Surface_patches2=[]
 
     bunch_CT_patches_vl=[]
     bunch_GTV_patches_vl=[]
     bunch_Penalize_patches_vl=[]
+    bunch_Surface_patches_vl=[]
 
     bunch_CT_patches_vl2=[]
     bunch_GTV_patches_vl2=[]
 
     bunch_Penalize_patches_vl2 = []
+    bunch_Surface_patches_vl2 = []
     validation_patch_reuse = []

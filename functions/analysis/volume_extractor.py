@@ -39,7 +39,7 @@ if __name__=='__main__':
     #     list_vol.append(Ones)
     #     print(name)
 
-    num_cores = multiprocessing.cpu_count()
+    num_cores = 1#multiprocessing.cpu_count()
     res = Parallel(n_jobs=num_cores)(
         delayed(fun)(train_GTVs[i],test_CTs[i])
         for i in range(len(train_GTVs)))  #

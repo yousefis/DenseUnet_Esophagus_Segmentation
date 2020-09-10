@@ -8,7 +8,7 @@ import functions.slurm_utils as slurm
 # server_path='/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/'
 
 
-def submit_job():
+def submit_job(fold):
     # Choosing the preferred setting and backup the whole code and submit the job
     # script_address= server_path+Logs
     queue = 'LKEBgpu'  # 'cpu', 'gpu', 'LKEBgpu'
@@ -34,7 +34,7 @@ def submit_job():
     setting['cluster_MemPerCPU'] = 6200   #2200  # 6200
     setting['cluster_Partition'] = queue             # 'gpu', 'LKEBgpu'
     setting['cluster_NodeList'] = 'res-hpc-lkeb05'    # None, LKEBgpu: ['res-hpc-lkeb03', 'res-hpc-lkeb02', 'res-hpc-gpu01']
-    setting['cluster_NumberOfCPU'] = 5#10 #3               # Number of CPU per job
+    setting['cluster_NumberOfCPU'] = 6#10 #3               # Number of CPU per job
     setting['cluster_where_to_run'] = 'Cluster'      # 'Cluster', 'Auto'
     setting['cluster_venv_slurm'] = '/exports/lkeb-hpc/syousefi/Programs/'+TF+'/bin/activate'  # venv path
 
@@ -43,10 +43,10 @@ def submit_job():
 
     if setting['cluster_NodeList'] == 'res-hpc-lkeb02':
         setting['cluster_MemPerCPU'] = 15000
-    main_script = '/run_net_distancemap_attention_spatial.py'
+    main_script = '/run_net_surfacemap_attention_spatial.py'
     folder_script = 'functions'
     # A backup from all files are created. So later if you modify the codes, this does not affect the submitted code.
-    backup_script_address, backup_number = backup_script(script_address=os.path.realpath(__file__), main_script=main_script, folder_script  =folder_script,net_config=net_config)
+    backup_script_address, backup_number = backup_script(script_address=os.path.realpath(__file__), main_script=main_script, folder_script  =folder_script,net_config=net_config,fold=fold)
     ext = ''.join(str(net_config[e]) for e in range(len(net_config)))
     job_name = 'SpatialAttention'+ext+'_'+str(backup_number)
     write_and_submit_job(setting, manager=manager, job_name=job_name, script_address=backup_script_address)
@@ -84,10 +84,11 @@ def write_and_submit_job(setting, manager, job_name, script_address):
         submit_cmd = 'sbatch ' + job_script_address
     else:
         raise ValueError("manager should be in ['OGE', 'Slurm']")
+    print(job_output_file)
     os.system(submit_cmd)
 
 
-def backup_script(script_address, main_script, folder_script, net_config):
+def backup_script(script_address, main_script, folder_script, net_config,fold):
     """
     backup the current script to the backup-1 folder. If this folder already exists it won't overwrite it, instead
     it will try to create another folder called backup-2.
@@ -105,7 +106,7 @@ def backup_script(script_address, main_script, folder_script, net_config):
     date_now = datetime.datetime.now()
     backup_number = '{:04d}{:02d}{:02d}_{:02d}{:02d}{:02d}'.\
         format(date_now.year, date_now.month, date_now.day, date_now.hour, date_now.minute, date_now.second)
-    backup_root_folder = script_folder + 'CodeCluster_new_data/new'+ext+'_attentiondenseblock02_nomap_spatial/'
+    backup_root_folder = script_folder + 'cross_vali/new'+ext+'_surfacemap'+str(fold)+'/'
     backup_folder = backup_root_folder + 'backup-' + str(backup_number) + '/'
     os.makedirs(backup_folder)
     shutil.copy(script_address, backup_folder)
@@ -116,4 +117,5 @@ def backup_script(script_address, main_script, folder_script, net_config):
 
 
 if __name__ == '__main__':
-    submit_job()
+    fold=2
+    submit_job(fold)

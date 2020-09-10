@@ -8,15 +8,15 @@ import matplotlib.pyplot as plt
 from functions.loss_func import _loss_func
 #import math as math
 import numpy as np
-from functions.data_reader.read_data3 import _read_data
+from functions.data_reader.read_data3_surface import _read_data
 
 
-from functions.networks.dense_unet2 import _densenet_unet
+# from functions.networks.dense_unet2_attention_spatial_skip_ch_attention import _densenet_unet
 # from functions.networks.dense_unet2_attention import _densenet_unet #channel attention 07052020_000
 # from functions.networks.dense_unet2_attention_channel_spatial import _densenet_unet #dice+attention channel+spatial  no distancemap 07102020_140
-# from functions.networks.dense_unet2_attention_spatial import _densenet_unet #dice+attention spatial  no distancemap 07142020_020
+from functions.networks.dense_unet2_attention_spatial import _densenet_unet #dice+attention spatial  no distancemap 07142020_020
 from functions.measurements import _measure
-from functions.image_class_penalize import image_class
+from functions.image_class_penalize_surface import image_class
 
 eps = 1E-5
 plot_tag = 'densenet'
@@ -196,9 +196,9 @@ def test_all_nets(fold,out_dir,Log,log_tag):
 
     # test_CTs, test_GTVs ,test_Torsos= _rd.read_imape_path(test_path)
 
-    train_CTs, train_GTVs, train_Torso, train_penalize, \
-    validation_CTs, validation_GTVs, validation_Torso, validation_penalize, \
-    test_CTs, test_GTVs, test_Torso, test_penalize = _rd.read_data_path(fold=fold)
+    train_CTs, train_GTVs, train_Torso, train_penalize, train_surface, \
+    validation_CTs, validation_GTVs, validation_Torso, validation_penalize, validation_surface, \
+    test_CTs, test_GTVs, test_Torso, test_penalize, test_surface = _rd.read_data_path(fold=fold)
 
     # test_CTs=train_CTs
     # test_GTVs=train_GTVs
@@ -232,6 +232,7 @@ def test_all_nets(fold,out_dir,Log,log_tag):
     image = tf.placeholder(tf.float32, shape=[None, ct_cube_size, ct_cube_size, ct_cube_size, 1])
     label = tf.placeholder(tf.float32, shape=[None, gtv_cube_size, gtv_cube_size, gtv_cube_size, 2])
     penalize = tf.placeholder(tf.float32, shape=[None, gtv_cube_size, gtv_cube_size, gtv_cube_size, 1])
+    surf_map = tf.placeholder(tf.float32, shape=[None,gtv_cube_size, gtv_cube_size, gtv_cube_size, 1])
 
     ave_vali_acc=tf.placeholder(tf.float32)
     ave_loss_vali=tf.placeholder(tf.float32)
@@ -255,9 +256,18 @@ def test_all_nets(fold,out_dir,Log,log_tag):
     loss_instance=_loss_func()
 
     accuracy = loss_instance.accuracy_fn(y, label)
-    [dice, edited_dice] = loss_instance.penalize_dice(logits=y, labels=label, penalize=pnalize)
+    # [dice, edited_dice] = loss_instance.penalize_dice(logits=y, labels=label, penalize=pnalize)
     # soft_dice_coef=self.loss_instance.soft_dice(logits=y, labels=label)
-    cost = tf.reduce_mean(1.0 - dice[1], name="cost")
+    # cost = tf.reduce_mean(1.0 - dice[1], name="cost")
+
+    '''AdamOptimizer:'''
+    penalize_weight = 0
+    [penalized_loss,
+     soft_dice_coef, logt, lbl] = loss_instance.dice_plus_distance_penalize(logits=y, labels=label,
+                                                                                 penalize=penalize)
+    surface_loss = loss_instance.surface_loss(logits=y, labels=label, surf_map=surf_map)
+    cost = tf.reduce_mean((1.0 - soft_dice_coef[1]) + penalize_weight * penalized_loss + surface_loss, name="cost")
+
     # correct_prediction = tf.equal(tf.argmax(y, 4), tf.argmax(label, 4))
     # accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
     # cost = tf.reduce_mean(lf.tversky(logits=y, labels=label, alpha=0.9, beta=0.1), name="cost")
@@ -270,8 +280,8 @@ def test_all_nets(fold,out_dir,Log,log_tag):
     saver.restore(sess, ckpt.model_checkpoint_path)
     _meas = _measure()
     out_path = chckpnt_dir+'output/'
-    copyfile('./submit_test_job_distancemap_attention.py',
-             '/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/' + Log + out_dir + 'submit_test_job_distancemap_attention.py')
+    # copyfile('./submit_test_job_distancemap_attention_surface.py',
+    #          '/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/' + Log + out_dir + 'submit_test_job_distancemap_attention_surface.py')
 
     jj = []
     dd = []
@@ -308,7 +318,7 @@ def test_all_nets(fold,out_dir,Log,log_tag):
     presicion0=[]
     presicion1=[]
     presicion_av=[]
-    img_class=image_class(test_CTs,test_GTVs,test_Torso,test_penalize
+    img_class=image_class(test_CTs,test_GTVs,test_Torso,test_penalize,test_surface
                      ,bunch_of_images_no=20,is_training=1,patch_window=ct_cube_size,gtv_patch_window=gtv_cube_size )
 
 
@@ -360,7 +370,7 @@ def test_all_nets(fold,out_dir,Log,log_tag):
                     if len(np.where(gtv[0,:,:,:,1]!=0)[0]):
                         print('o')
 
-                    [acc_vali, loss_vali,out,dn_out1] = sess.run([accuracy, cost,y,yyy],
+                    [ out] = sess.run([y],
                                                          feed_dict={image: ct,
                                                                     label: gtv,
                                                                     penalize: penlz,
@@ -371,7 +381,7 @@ def test_all_nets(fold,out_dir,Log,log_tag):
                                                                     ave_loss_vali: -1,
                                                                     dense_net_dim: ct_cube_size,
                                                                     is_training_bn: False,
-
+                                                                    surf_map: np.expand_dims(gtv[:,:,:,:,0],-1)
                                                                     })
 
                     if len(_yy_img_gt)==0:
@@ -451,15 +461,15 @@ def test_all_nets(fold,out_dir,Log,log_tag):
         predicted_label.SetDirection(direction=direction)
         predicted_label.SetOrigin(origin=origin)
         predicted_label.SetSpacing(spacing=voxel_size)
-        sitk.WriteImage(predicted_label, '/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/'+Log+out_dir+name+'_result.mha')
+        # sitk.WriteImage(predicted_label, '/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/'+Log+out_dir+name+'_result.mha')
 
         segmentation = np.asarray(_zz_img)
         predicted_label = sitk.GetImageFromArray(segmentation.astype(np.float32))
         predicted_label.SetDirection(direction=direction)
         predicted_label.SetOrigin(origin=origin)
         predicted_label.SetSpacing(spacing=voxel_size)
-        sitk.WriteImage(predicted_label,
-                        '/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/' + Log + out_dir + name + '_fuzzy.mha')
+        # sitk.WriteImage(predicted_label,
+        #                 '/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/' + Log + out_dir + name + '_fuzzy.mha')
 
 
 
@@ -470,14 +480,14 @@ def test_all_nets(fold,out_dir,Log,log_tag):
         predicted_label.SetDirection(direction=direction)
         predicted_label.SetOrigin(origin=origin)
         predicted_label.SetSpacing(spacing=voxel_size)
-        sitk.WriteImage(predicted_label, '/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/'+Log+out_dir+name+'_gtv.mha')
+        # sitk.WriteImage(predicted_label, '/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/'+Log+out_dir+name+'_gtv.mha')
 
         segmentation = np.asarray(_zz_img_ct)
         predicted_label = sitk.GetImageFromArray(segmentation.astype(np.short))
         predicted_label.SetDirection(direction=direction)
         predicted_label.SetOrigin(origin=origin)
         predicted_label.SetSpacing(spacing=voxel_size)
-        sitk.WriteImage(predicted_label, '/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/'+Log+out_dir+name+'_ct.mha')
+        # sitk.WriteImage(predicted_label, '/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/'+Log+out_dir+name+'_ct.mha')
         # output(filename, sheet, list1, list2, x, y, z)
         # output('/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/'+Log+out_dir +'file.xls','sheet 1',fnr,fpr,'a','b','c')
         print('end')
@@ -745,22 +755,24 @@ if __name__ == "__main__":
 
 
 
-    Log = '/Log_2019_09_23/Dataset3/33533_0.75_4-train1-04252020_220/' #dice normal net
+    # Log = '/Log_2019_09_23/Dataset3/33533_0.75_4-train1-04252020_220/' #dice normal net
+    # Log = '/Log_2019_09_23/Dataset3/33533_0.75_4-train1-08052020_140/' #dice normal net
     # Log = '/Log_2019_09_23/Dataset3/33533_0.75_4-train1-07032020_170/' #dice+distancemap+attebtion channel
     # Log = '/Log_2019_09_23/Dataset3/33533_0.75_4-train1-07052020_000/' #dice+attention channel no distancemap
     # Log = '/Log_2019_09_23/Dataset3/33533_0.75_4-train1-07102020_140/' #dice+attention channel+spatial  no distancemap
     # Log = '/Log_2019_09_23/Dataset3/33533_0.75_4-train1-07142020_020/' #dice+attention spatial  no distancemap
-
+    # Log = '/Log_2019_09_23/Dataset3/33533_0.75_4-train1-08242020_1950240/' #dice+attention spatial  + distancemap +skip channel attention
+    # Log = '/Log_2019_09_23/Dataset3/33533_0.75_4-train1-09042020_152/'  # fold=2
 
 
     # for i in range(6,7):
     #     fold = -i
-    fold=0
+    fold=1
     i=0
 
     # for j in range(0,2):
     log_tag = ''#'23432_0.75_4-train1-03232020_140--'+str(i)+'/'
-    test_vali =1
+    test_vali =0
     if test_vali == 1:
         out_dir =  '/result_vali/'
     else:
