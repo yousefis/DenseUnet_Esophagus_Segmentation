@@ -268,8 +268,8 @@ def test_all_nets(fold,out_dir,Log):
     saver.restore(sess, ckpt.model_checkpoint_path)
     _meas = _measure()
     out_path = chckpnt_dir+'output/'
-    copyfile('./test_densenet_unet.py',
-             '/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/' + Log + out_dir + 'test_densenet_unet.py')
+    copyfile('/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/dense_net_3d_segmentation-1-dice-tumor--106/test_distancemap_10dice.py',
+             '/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/' + Log + out_dir + 'test_distancemap_10dice.py')
 
     jj = []
     dd = []
@@ -744,10 +744,10 @@ if __name__ == "__main__":
 
     # Log = '/Log_2019_09_23/Dataset3/23432_0.75_4-train1-03232020_140/'
     Log = '/Log_2019_09_23/Dataset3/33533_0.75_4-train1-04172020_140/' #10*dice+distance map
-    Log = '/Log_2019_09_23/Dataset3/33533_0.75_4-train1-04252020_220/' #dice+distancemap
-    Log = '/Log_2019_09_23/Dataset3/33533_0.75_4-train1-04302020_090/' #dice+distancemap
-    Log = '/Log_2019_09_23/Dataset3/33533_0.75_4-train1-05042020_120/' #dice+distancemap
-    Log = '/Log_2019_09_23/Dataset3/33533_0.75_4-train1-05082020_090/' #dice+distancemap
+    # Log = '/Log_2019_09_23/Dataset3/33533_0.75_4-train1-04252020_220/' #dice+distancemap
+    # Log = '/Log_2019_09_23/Dataset3/33533_0.75_4-train1-04302020_090/' #dice+distancemap
+    # Log = '/Log_2019_09_23/Dataset3/33533_0.75_4-train1-05042020_120/' #dice+distancemap
+    # Log = '/Log_2019_09_23/Dataset3/33533_0.75_4-train1-05082020_090/' #dice+distancemap
 
 
 
@@ -756,11 +756,11 @@ if __name__ == "__main__":
     fold=0
     i=0
 
-    for j in range(0,2):
-        log_tag = ''#'23432_0.75_4-train1-03232020_140--'+str(i)+'/'
-        test_vali = j
-        if test_vali == 1:
-            out_dir = log_tag + '/result_vali/'
-        else:
-            out_dir = log_tag + '/result/'
-        test_all_nets(fold, out_dir, Log)
+    # for j in range(0,2):
+    log_tag = ''#'23432_0.75_4-train1-03232020_140--'+str(i)+'/'
+    test_vali = 1
+    if test_vali == 1:
+        out_dir = log_tag + '/result_vali/'
+    else:
+        out_dir = log_tag + '/result/'
+    test_all_nets(fold, out_dir, Log)
