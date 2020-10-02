@@ -70,7 +70,8 @@ def read_xls(xls_path,results,parent_pth,fields):
 #this file shows the boxplots for the journal paper
 if __name__=='__main__':
     parent_pth='/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/Log_2019_09_23/Dataset3/'
-    xls_path=['33533_0.75_4-train1-04252020_220/',  #dice+Nodistancemap
+    xls_path=[
+        '33533_0.75_4-train1-05082020_090/',  #dice+Nodistancemap
               # '33533_0.75_4-train1-07032020_170/', #dice+distancemap+attebtion channel
               '33533_0.75_4-train1-07052020_000/',  #dice+attention channel no distancemap
               '33533_0.75_4-train1-07142020_020/',  #dice+attention spatial  no distancemap
@@ -82,7 +83,8 @@ if __name__=='__main__':
 
 
               ]
-    cnn_tags=['DDUnet',
+    cnn_tags=['DUnet',
+        'DDUnet',
               'DDChannelAttUnet',
               'DDSpatialAttUnet',
               'DDSpatialChannelAttUnet',
