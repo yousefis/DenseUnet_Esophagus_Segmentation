@@ -2,6 +2,7 @@ import  SimpleITK as sitk
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.collections import LineCollection
+import cv2
 
 def get_all_boundary_edges(bool_img):
     """
@@ -78,6 +79,10 @@ def plot_world_outlines(bool_img, ax=None, **kwargs):
     xy_boundary = close_loop_boundary_edges(xy_boundary=xy_boundary)
     cl = LineCollection(xy_boundary, **kwargs)
     ax.add_collection(cl)
+def hist_equalizer(img):
+    equ = cv2.equalizeHist(img)
+    res = np.hstack((img, equ))  # stacking images side-by-side
+    plt.imshow(res)
 
 def dice( im1, im2):
     if im1.shape != im2.shape:
