@@ -12,3 +12,7 @@
       year={2018},  
       organization={Springer}
     }
+
+# Requirments
+
+Tensorflow<2 & python>3.4
