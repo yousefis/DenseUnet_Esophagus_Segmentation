@@ -80,9 +80,18 @@ def plot_world_outlines(bool_img, ax=None, **kwargs):
     cl = LineCollection(xy_boundary, **kwargs)
     ax.add_collection(cl)
 def hist_equalizer(img):
-    equ = cv2.equalizeHist(img)
-    res = np.hstack((img, equ))  # stacking images side-by-side
-    plt.imshow(res)
+    # equ = cv2.equalizeHist(img)
+    # res = np.hstack((img, equ))  # stacking images side-by-side
+    # plt.imshow(res)
+    # img = I[slice_no, :, :]
+    hist, bins = np.histogram(img.flatten(), np.max(img) - np.min(img), [np.min(img), np.max(img)])
+    cdf = hist.cumsum()
+    cdf_m = np.ma.masked_equal(cdf, 0)
+    cdf_m = (cdf_m - cdf_m.min()) * cdf_m.max() / (1000 - 100)
+    cdf = np.ma.filled(cdf_m, 0).astype('uint8')
+    img2 = cdf[img]
+    plt.imshow(img2,cmap='gray')
+    plt.show()
 
 def dice( im1, im2):
     if im1.shape != im2.shape:
@@ -101,18 +110,20 @@ nm="TEST103_2018-01-11"
 nm="zz2408044448_zz2408044448"
 nm="zz3710236225_zz3710236225"
 nm="zz3744705519_zz3744705519"
-nm="TEST091_2017-03-13"
-nm="TEST086_2016-12-21"
-nm="TEST108_2017-09-18"
-nm="zz2816682167_zz2816682167"
-nm="zz3466954516_zz3466954516"
-nm="zz197056916_zz197056916"
+# nm="TEST091_2017-03-13"
+# nm="TEST086_2016-12-21"
+# nm="TEST108_2017-09-18"
+# nm="zz2816682167_zz2816682167"
+# nm="zz3466954516_zz3466954516"
+# nm="zz197056916_zz197056916"
 # nm="RGLA_2013-06-11_4DCT_80"
 img_nm = nm+"_ct.mha"
 img_gtv = nm+"_gtv.mha"
 img_res = nm+"_result.mha"
-slice_no=136
-I=sitk.GetArrayFromImage(sitk.ReadImage(path+img_nm))
+slice_no=121
+II=sitk.ReadImage(path+img_nm)
+I=sitk.GetArrayFromImage(II)
+
 gtv=sitk.GetArrayFromImage(sitk.ReadImage(path+img_gtv))
 res=sitk.GetArrayFromImage(sitk.ReadImage(path+img_res))
 dsc=dice( gtv[slice_no,:,:], res[slice_no,:,:])
@@ -123,14 +134,43 @@ print(dsc)
 a=160
 b=-150
 plt.figure(frameon=False)
+
+# II= hist_equalizer(I[slice_no,:,:])
 plt.imshow(I[slice_no,:,:], cmap='gray')
 plt.axis('off')
-plt.savefig(path+'journal/'+img_nm.rsplit('_ct.mha')[0]+'_'+str(slice_no)+'.png', bbox_inches='tight', pad_inches=0,dpi=500)
-plot_world_outlines(gtv[slice_no,:,:].T, lw=1, color='springgreen')
-plot_world_outlines(res[slice_no,:,:].T, lw=1, color='r')
-plt.axis('off')
-plt.savefig(path+'journal/'+img_nm.rsplit('_ct.mha')[0]+'_'+str(slice_no)+'_'+str(dsc)+'.png', bbox_inches='tight', pad_inches=0,dpi=500)
+
+sitk_img = sitk.GetImageFromArray(np.expand_dims(I[slice_no,:,:],0))
+sitk_img.SetDirection(direction=II.GetDirection())
+sitk_img.SetOrigin(origin=II.GetOrigin())
+sitk_img.SetSpacing(spacing=II.GetSpacing())
+sitk.WriteImage(sitk_img,path+'journal2/'+img_nm.rsplit('_ct.mha')[0]+'_'+str(slice_no)+'.mha')
+
+sitk_img = sitk.GetImageFromArray(np.expand_dims(gtv[slice_no,:,:],0))
+sitk_img.SetDirection(direction=II.GetDirection())
+sitk_img.SetOrigin(origin=II.GetOrigin())
+sitk_img.SetSpacing(spacing=II.GetSpacing())
+sitk.WriteImage(sitk_img,path+'journal2/'+img_nm.rsplit('_ct.mha')[0]+'_'+str(slice_no)+'_gtv.mha')
+
+sitk_img = sitk.GetImageFromArray(np.expand_dims(res[slice_no,:,:],0))
+sitk_img.SetDirection(direction=II.GetDirection())
+sitk_img.SetOrigin(origin=II.GetOrigin())
+sitk_img.SetSpacing(spacing=II.GetSpacing())
+sitk.WriteImage(sitk_img,path+'journal2/'+img_nm.rsplit('_ct.mha')[0]+'_'+str(slice_no)+'_res.mha')
+
+# plt.savefig(path+'journal2/'+img_nm.rsplit('_ct.mha')[0]+'_'+str(slice_no)+'.png', bbox_inches='tight', pad_inches=0,dpi=500)
+# plot_world_outlines(gtv[slice_no,:,:].T, lw=1, color='springgreen')
+# plot_world_outlines(res[slice_no,:,:].T, lw=1, color='r')
+# plt.axis('off')
+
+
+# sitk_img = sitk.GetImageFromArray(I[slice_no,:,:].astype(np.uint8))
+# sitk_img.SetDirection(direction=II.GetDirection())
+# sitk_img.SetOrigin(origin=II.GetOrigin())
+# sitk_img.SetSpacing(spacing=II.GetSpacing())
+# sitk.WriteImage(sitk_img,path+'journal2/'+img_nm.rsplit('_ct.mha')[0]+'_'+str(slice_no)+'.mha')
+
+plt.savefig(path+'journal2/'+img_nm.rsplit('_ct.mha')[0]+'_'+str(slice_no)+'_'+str(dsc)+'.png', bbox_inches='tight', pad_inches=0,dpi=500)
 # plt.show()
-# plt.savefig(path+'journal/'+img_nm.rsplit('_ct.eps')[0]+'_'+str(slice_no)+'+'+str(dsc)+'.eps',  bbox_inches='tight', pad_inches=0)
+# plt.savefig(path+'journal2/'+img_nm.rsplit('_ct.eps')[0]+'_'+str(slice_no)+'+'+str(dsc)+'.eps',  bbox_inches='tight', pad_inches=0)
 print(2)
-# plt.savefig(path+'journal/foo.pdf')
+# plt.savefig(path+'journal2/foo.pdf')
