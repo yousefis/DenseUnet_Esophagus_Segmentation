@@ -71,7 +71,7 @@ def read_xls(xls_path,results,parent_pth,fields):
 if __name__=='__main__':
     parent_pth='/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/Log_2019_09_23/Dataset3/'
     xls_path=[
-        '33533_0.75_4-train1-05082020_090/',  #dice+Nodistancemap
+        '33533_0.75_4-train1-05082020_090/',  #dice Nodistancemap
               # '33533_0.75_4-train1-07032020_170/', #dice+distancemap+attebtion channel
               '33533_0.75_4-train1-07052020_000/',  #dice+attention channel no distancemap
               '33533_0.75_4-train1-07142020_020/',  #dice+attention spatial  no distancemap
@@ -79,7 +79,8 @@ if __name__=='__main__':
               '33533_0.75_4-train1-08132020_120/',
               '33533_0.75_4-train1-08242020_1950240/' , # dice+attention spatial  no distancemap +channel skip att+bourndry loss
               '33533_0.75_4-train1-08052020_140/',  #dice+attention spatial  no distancemap +bourndry loss
-              # '33533_0.75_4-train1-08132020_10590/',
+              '33533_0.75_4-train1-08132020_10590/', #spatial only focal dice
+              '/33533_0.75_4-train1-08132020_120/' #spatial only focal dice+surface
 
 
               ]
@@ -91,10 +92,19 @@ if __name__=='__main__':
               'spatial_skip_att_BoundaryLoss',
               'channel_skip_att_BoundaryLoss',
               'DDSpatialAttUnetBoundaryLoss',
-
               # 'FocalLoss',
-
               ]
+    cnn_tags = ['DUnet',
+                'DDUnet',
+                'DD(CA)Unet',
+                'DD(SA)Unet',
+                'DD(SCA)Unet',
+                'DD(SA)Unet(SkipA)+BL',
+                'DD(CA)Unet(SkipA)+BL',
+                'DD(SA)Unet+BL',
+                # 'FocalLoss',
+                ]
+
     test_vali=1
     if test_vali==0:
         results='result/'
