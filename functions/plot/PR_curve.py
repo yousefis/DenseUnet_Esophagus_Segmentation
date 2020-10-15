@@ -27,7 +27,7 @@ from random import shuffle
 # from read_data import _read_data
 # from measurements import _measure
 # from image_class import image_class
-vali=1
+vali=0
 if vali==0:
     out_dir = 'result_vali/'
 else:
@@ -40,10 +40,12 @@ test_path='/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/Esophagus
 
 test_path='/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/Log_2019_09_23/Dataset3/33533_0.75_4-train1-07102020_140/' #spatial and channel
 
-test_path='/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/Log_2019_09_23/Dataset3/33533_0.75_4-train1-07052020_000/' #channel
+# test_path='/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/Log_2019_09_23/Dataset3/33533_0.75_4-train1-07052020_000/' #channel
 test_path='/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/Log_2019_09_23/Dataset3/33533_0.75_4-train1-08052020_140/' #surface
-test_path='/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/Log_2019_09_23/Dataset3/33533_0.75_4-train1-08242020_1950240/'
-test_path='/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/Log_2019_09_23/Dataset3/33533_0.75_4-train1-05082020_090/'
+test_path='/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/Log_2019_09_23/Dataset3/33533_0.75_4-train1-04172020_140/'
+# test_path='/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/Log_2019_09_23/Dataset3/33533_0.75_4-train1-08242020_1950240/'
+# test_path='/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/Log_2019_09_23/Dataset3/33533_0.75_4-train1-05082020_090/'
+
 import multiprocessing
 from joblib import Parallel, delayed
 eps=10e-10
@@ -107,7 +109,7 @@ def Recall(TP,TN,FP,FN):
 step=1/200
 threshold_vec=np.arange(0,1.0+2*step,step)
 # threshold_vec=np.arange(0,.3,0.1)
-num_cores = 7#multiprocessing.cpu_count()
+num_cores = 10#multiprocessing.cpu_count()
 
 # volumes=Parallel(n_jobs=num_cores)(
 #         delayed(read_image)(path_fuzzy=path_fuzzy[i],

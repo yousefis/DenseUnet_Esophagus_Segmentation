@@ -6,7 +6,7 @@ from os import listdir
 from os.path import isfile, join
 
 font = {'family' : 'normal',
-        'size'   : 14}
+        'size'   : 20}
 plt.rc('font', **font)
 
 def read_names( tag,test_path):
@@ -42,13 +42,47 @@ def calculate_precision_recall(xls_files):
     print((np.sum(precision)+1)/ (np.size(precision)+1))
     return recall,precision
 
-test_path= ['/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/Log_2019_09_23/Dataset3/33533_0.75_4-train1-07142020_020/result/',#spatial
-            '/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/Log_2019_09_23/Dataset3/33533_0.75_4-train1-07102020_140/result/',#spatial+channel
-            '/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/Log_2019_09_23/Dataset3/33533_0.75_4-train1-07052020_000/result/',#channel
-'/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/Log_2019_09_23/Dataset3/33533_0.75_4-train1-04172020_140/result/','/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/Log_2019_09_23/Dataset3/33533_0.75_4-train1-08052020_140/result/'
+test_path= [
+            '/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/Log_2019_09_23/Dataset3/33533_0.75_4-train1-07142020_020/result_vali/',#dice+attention spatial  no distancemap
+'/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/Log_2019_09_23/Dataset3/33533_0.75_4-train1-05082020_090/result_vali/',#dice+Nodistancemap
+            '/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/Log_2019_09_23/Dataset3/33533_0.75_4-train1-07052020_000/result_vali/',#dice+attention channel no distancemap
+'/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/Log_2019_09_23/Dataset3/33533_0.75_4-train1-07102020_140/result_vali/', #dice+attention channel+spatial  no distancemap
+            '/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/Log_2019_09_23/Dataset3/33533_0.75_4-train1-08052020_140/result_vali/',#dice normal net
+'/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/Log_2019_09_23/Dataset3/33533_0.75_4-train1-04172020_140/result_vali/', #DUNET
             ]
+# test_path= ['33533_0.75_4-train1-05082020_090/',  #dice+Nodistancemap
+#               # '33533_0.75_4-train1-07032020_170/', #dice+distancemap+attebtion channel
+#               '33533_0.75_4-train1-07052020_000/',  #dice+attention channel no distancemap
+#               '33533_0.75_4-train1-07142020_020/',  #dice+attention spatial  no distancemap
+#               '33533_0.75_4-train1-07102020_140/',  # dice+attention channel+spatial  no distancemap
+#               '33533_0.75_4-train1-08132020_120/',
+#               '33533_0.75_4-train1-08242020_1950240/' , # dice+attention spatial  no distancemap +channel skip att+bourndry loss
+#               '33533_0.75_4-train1-08052020_140/',  #dice+attention spatial  no distancemap +bourndry loss
+#               # '33533_0.75_4-train1-08132020_10590/',
+#            ]
+# for i in range(7):
+#     test_path[i]='/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/Log_2019_09_23/Dataset3/'+test_path[i]+'/result_vali/'
 
-print('DDUnet')
+
+cnn_tags=['DUnet',
+          'DDUnet',
+          'DD(SA)Unet',
+          'DD(CA)Unet',
+          'DD(SCA)Unet',
+          'DD(SA)Unet(SkipA)',
+          # 'FocalLoss',
+          ]
+
+print(cnn_tags[0])
+xls_files=read_names(tag='.xlsx',test_path=test_path[5])
+recall5,precision5= calculate_precision_recall(xls_files)
+precision5=precision5.to_numpy()
+precision5=np.insert(precision5,-1,1,axis=0)
+# print(np.sum(precision3)/np.size(precision3))
+recall5=recall5.to_numpy()
+recall5 = np.insert(recall5,-1,0,axis=0)
+
+print(cnn_tags[4])
 xls_files=read_names(tag='.xlsx',test_path=test_path[3])
 recall,precision= calculate_precision_recall(xls_files)
 precision=precision.to_numpy()
@@ -58,7 +92,7 @@ recall=recall.to_numpy()
 recall = np.insert(recall,-1,0,axis=0)
 
 
-print('DDSpatialAttUnet')
+print(cnn_tags[2])
 xls_files=read_names(tag='.xlsx',test_path=test_path[0])
 recall1,precision1= calculate_precision_recall(xls_files)
 precision1=precision1.to_numpy()
@@ -69,7 +103,7 @@ recall1 = np.insert(recall1,-1,0,axis=0)
 
 
 
-print('DDChannelAttUnet')
+print(cnn_tags[3])
 xls_files=read_names(tag='.xlsx',test_path=test_path[2])
 recall2,precision2= calculate_precision_recall(xls_files)
 precision2=precision2.to_numpy()
@@ -80,7 +114,7 @@ recall2 = np.insert(recall2,-1,0,axis=0)
 
 
 
-print('DDSpatialChannelAttUnet')
+print(cnn_tags[4])
 xls_files=read_names(tag='.xlsx',test_path=test_path[1])
 recall3,precision3= calculate_precision_recall(xls_files)
 precision3=precision3.to_numpy()
@@ -89,7 +123,7 @@ precision3=np.insert(precision3,-1,1,axis=0)
 recall3=recall3.to_numpy()
 recall3 = np.insert(recall3,-1,0,axis=0)
 
-print('DDSpatialAttUnetBoundryLoss')
+print(cnn_tags[5])
 xls_files=read_names(tag='.xlsx',test_path=test_path[4])
 recall4,precision4= calculate_precision_recall(xls_files)
 precision4=precision4.to_numpy()
@@ -99,15 +133,7 @@ recall4=recall4.to_numpy()
 recall4 = np.insert(recall4,-1,0,axis=0)
 
 
-cnn_tags=['DDUnet',
-              'DDChannelAttUnet',
-              'DDSpatialAttUnet',
-              'DDSpatialChannelAttUnet',
-              'Skip_att',
-              'DDSpatialAttUnetBoundaryLoss',
-              # 'FocalLoss',
 
-              ]
 
 
 
@@ -115,14 +141,14 @@ cnn_tags=['DDUnet',
 color = ['pink', 'lightblue',  'tomato',
          'lightgreen',  'hotpink', 'orchid','cyan']
 plt.figure()
+line0, = plt.plot(1-recall5,precision5,linestyle='-',color=color[6])
 line1, = plt.plot(1-recall,precision,linestyle='-',color=color[0])
 line2, = plt.plot(1-recall1,precision1,linestyle='-',color=color[1])
 line3, =plt.plot(1-recall2,precision2,linestyle='-',color=color[2])
 line4, =plt.plot(1-recall3,precision3,linestyle='-',color=color[3])
 line5, =plt.plot(1-recall4,precision4,linestyle='-',color=color[4])
 
-plt.legend((line1, line2,line3,line4,line5),('DDUnet','DDSpatialAttUnet',
-                                       'DDChannelAttUnet','DDSpatialChannelAttUnet','DDSpatialAttUnetBoundryLoss'))
+plt.legend((line0,line1, line2,line3,line4,line5),(cnn_tags[0],cnn_tags[1],cnn_tags[2],cnn_tags[3],cnn_tags[4],cnn_tags[5]))
 plt.xlim([0,1])
 plt.ylim([0,1])
 plt.xlabel('1-Recall')
