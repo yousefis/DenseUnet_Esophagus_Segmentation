@@ -760,9 +760,9 @@ if __name__ == "__main__":
     # Log = '/Log_2019_09_23/Dataset3/33533_0.75_4-train1-07032020_170/' #dice+distancemap+attebtion channel
     # Log = '/Log_2019_09_23/Dataset3/33533_0.75_4-train1-07052020_000/' #dice+attention channel no distancemap
     # Log = '/Log_2019_09_23/Dataset3/33533_0.75_4-train1-07102020_140/' #dice+attention channel+spatial  no distancemap
-    # Log = '/Log_2019_09_23/Dataset3/33533_0.75_4-train1-07142020_020/' #dice+attention spatial  no distancemap
+    Log = '/Log_2019_09_23/Dataset3/33533_0.75_4-train1-07142020_020/' #dice+attention spatial  no distancemap
     # Log = '/Log_2019_09_23/Dataset3/33533_0.75_4-train1-08242020_1950240/' #dice+attention spatial  + distancemap +skip channel attention
-    # Log = '/Log_2019_09_23/Dataset3/33533_0.75_4-train1-09042020_152/'  # fold=2
+    Log = '/Log_2019_09_23/Dataset3/33533_0.75_4-train1-09042020_152/'  # fold=2
 
 
     # for i in range(6,7):

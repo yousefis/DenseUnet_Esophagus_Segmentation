@@ -11,8 +11,8 @@ import numpy as np
 from functions.data_reader.read_data3 import _read_data
 
 
-from functions.networks.dense_unet2_attention_spatial import _densenet_unet
-from functions.networks.dense_unet2_attention_spatial_skip_attention import _densenet_unet
+# from functions.networks.dense_unet2_attention_spatial import _densenet_unet
+# from functions.networks.dense_unet2_attention_spatial_skip_attention import _densenet_unet
 # from functions.networks.dense_unet2_attention import _densenet_unet #channel attention 07052020_000
 # from functions.networks.dense_unet2_attention_channel_spatial import _densenet_unet #dice+attention channel+spatial  no distancemap 07102020_140
 # from functions.networks.dense_unet2_attention_spatial import _densenet_unet #dice+attention spatial  no distancemap 07142020_020
@@ -747,13 +747,13 @@ if __name__ == "__main__":
 
 
     # Log = '/Log_2019_09_23/Dataset3/33533_0.75_4-train1-04252020_220/' #dice normal net
-    # Log = '/Log_2019_09_23/Dataset3/33533_0.75_4-train1-07032020_170/' #dice+distancemap+attebtion channel
+    Log = '/Log_2019_09_23/Dataset3/33533_0.75_4-train1-07032020_170/' #dice+distancemap+attebtion channel
     # Log = '/Log_2019_09_23/Dataset3/33533_0.75_4-train1-07052020_000/' #dice+attention channel no distancemap
     # Log = '/Log_2019_09_23/Dataset3/33533_0.75_4-train1-07102020_140/' #dice+attention channel+spatial  no distancemap
     # Log = '/Log_2019_09_23/Dataset3/33533_0.75_4-train1-07142020_020/' #dice+attention spatial  no distancemap
     # Log = '/Log_2019_09_23/Dataset3/33533_0.75_4-train1-08132020_10590/' #spatial only focal dice
     # Log = '/Log_2019_09_23/Dataset3/33533_0.75_4-train1-08132020_100/' #spatial only focal dice+surface
-    Log = '/Log_2019_09_23/Dataset3/33533_0.75_4-train1-08132020_120/' #spatial only focal dice+surface
+    # Log = '/Log_2019_09_23/Dataset3/33533_0.75_4-train1-08132020_120/' #spatial only focal dice+surface
 
 
 

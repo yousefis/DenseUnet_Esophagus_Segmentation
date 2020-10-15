@@ -9,10 +9,11 @@ from functions.loss_func import _loss_func
 #import math as math
 import numpy as np
 from functions.data_reader.read_data3_surface import _read_data
+import time
 
 
 from functions.networks.dense_unet2_attention_spatial import _densenet_unet
-from functions.networks.dense_unet2_attention_spatial_skip_attention import _densenet_unet
+# from functions.networks.dense_unet2_attention_spatial_skip_attention import _densenet_unet
 # from functions.networks.dense_unet2_attention_spatial_skip_attention import _densenet_unet
 # from functions.networks.dense_unet2_attention import _densenet_unet #channel attention 07052020_000
 # from functions.networks.dense_unet2_attention_channel_spatial import _densenet_unet #dice+attention channel+spatial  no distancemap 07102020_140
@@ -371,7 +372,7 @@ def test_all_nets(fold,out_dir,Log,log_tag):
 
                     if len(np.where(gtv[0,:,:,:,1]!=0)[0]):
                         print('o')
-
+                    start_time=time.time()
                     [ out] = sess.run([y],
                                                          feed_dict={image: ct,
                                                                     label: gtv,
@@ -385,6 +386,8 @@ def test_all_nets(fold,out_dir,Log,log_tag):
                                                                     is_training_bn: False,
                                                                     surf_map: np.expand_dims(gtv[:,:,:,:,0],-1)
                                                                     })
+                    elapsed_time=time.time()-start_time
+                    print(elapsed_time)
 
                     if len(_yy_img_gt)==0:
                         _yy_img_gt = np.int32(gtv[0, :, :, :, 1])
@@ -763,8 +766,8 @@ if __name__ == "__main__":
     # Log = '/Log_2019_09_23/Dataset3/33533_0.75_4-train1-07052020_000/' #dice+attention channel no distancemap
     # Log = '/Log_2019_09_23/Dataset3/33533_0.75_4-train1-07102020_140/' #dice+attention channel+spatial  no distancemap
     # Log = '/Log_2019_09_23/Dataset3/33533_0.75_4-train1-07142020_020/' #dice+attention spatial  no distancemap
-    Log = '/Log_2019_09_23/Dataset3/33533_0.75_4-train1-08272020_161/'  # fold=1
-    # Log = '/Log_2019_09_23/Dataset3/33533_0.75_4-train1-09042020_152/'  # fold=1
+    # Log = '/Log_2019_09_23/Dataset3/33533_0.75_4-train1-08272020_161/'  # fold=1
+    Log = '/Log_2019_09_23/Dataset3/33533_0.75_4-train1-09042020_152/'  # fold=2
 
 
 
@@ -775,7 +778,7 @@ if __name__ == "__main__":
 
     # for j in range(0,2):
     log_tag = ''#'23432_0.75_4-train1-03232020_140--'+str(i)+'/'
-    test_vali =1
+    test_vali =2
     if test_vali == 1:
         out_dir =  '/result_vali/'
     else:
