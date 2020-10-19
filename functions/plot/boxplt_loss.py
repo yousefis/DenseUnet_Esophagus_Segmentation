@@ -37,21 +37,21 @@ def cumulative_dice(axes,cnn_tags,data,title):
     for i in reversed(range(0, 11, 1)):
         for dc in range(len(data)):
             vec[ dc,i] = sum(data[dc] < (i / 10))
-        # j=j+1
+
     y_labels = [ '0.0$\leq$', '0.1$\leq$','0.2$\leq$','0.3$\leq$','0.4$\leq$', '0.5$\leq$',  '0.6$\leq$',
                  '0.7$\leq$','0.8$\leq$','0.9$\leq$', '1.0$\leq$'
                 ]
-    df = pd.DataFrame({cnn_tags[0]: vec[0],
-                       cnn_tags[1]: vec[1],
-                       cnn_tags[2]: vec[2],
-                       cnn_tags[3]: vec[3],
-                       cnn_tags[4]: vec[4],
+    df = pd.DataFrame({cnn_tags[0]: vec[0]/171*100,
+                       cnn_tags[1]: vec[1]/171*100,
+                       cnn_tags[2]: vec[2]/171*100,
+                       cnn_tags[3]: vec[3]/171*100,
+                       cnn_tags[4]: vec[4]/171*100,
                        # cnn_tags[5]: vec[5],
                        # cnn_tags[6]: vec[6],
                        }, index=y_labels)
     # df.plot(ax=axes)
     # axes = df.plot.barh(color=colors)
-    bplot=df.plot(kind='bar', legend=False, ax=axes,color=colors,rot=-300)
+    bplot=df.plot(kind='bar', legend=False, ax=axes,color=colors,rot=-350)
     bplot.set_title(label=title, pad=20, )
     return bplot
 
@@ -92,10 +92,10 @@ if __name__=='__main__':
               '33533_0.75_4-train1-08052020_140/',  # dice+attention spatial  no distancemap +bourndry loss
               ]
 
-    cnn_tags = ['Dice','Dice + DM',
-                'Dice + Focal',
-                'Dice + Focal + BL',
-                'Dice + BL',
+    cnn_tags = ['DSC','DSC + DM',
+                'DSC + Focal',
+                'DSC + Focal + BL',
+                'DSC + BL',
                 ]
 
     test_vali=1
@@ -126,7 +126,7 @@ if __name__=='__main__':
     # fill with colors
     colors = ['pink', 'lightblue', 'tomato', 'lightgreen', 'hotpink', 'orchid', 'cyan']
     fill_pb_color([bplot2], colors, axes[0])
-    hgrid(axes[0], top=1, bottom=0, major_gap=.1, minor_gap=0.05, axis='y')
+    hgrid(axes[0], top=1.01, bottom=0, major_gap=.1, minor_gap=0.05, axis='y')
     axes[0].get_xaxis().set_ticks([])
     # =============================================
     # read xls files and fill vectors
@@ -138,29 +138,31 @@ if __name__=='__main__':
         major_gap = 50
     else:
         major_gap = 50
-    hgrid(axes[1], top=top1, bottom=0, major_gap=10, minor_gap=5, axis='y')
+    hgrid(axes[1], top=31, bottom=0, major_gap=10, minor_gap=5, axis='y')
     axes[1].get_xaxis().set_ticks([])
     # =============================================
     # # read xls files and fill vectors
     hd_without_lc, hd_with_lc = read_xls(xls_path, results, parent_pth, fields=['95hd', '95hd_lc'])
     bplot2 = plot_bp(axes[2], '95%HD', hd_with_lc)
     fill_pb_color(([bplot2]), colors, axes[2])
-    hgrid(axes[2], top=250, bottom=0, major_gap=100, minor_gap=20, axis='y')
+    hgrid(axes[2], top=151, bottom=0, major_gap=50, minor_gap=10, axis='y')
     axes[2].get_xaxis().set_ticks([])
     # =============================================
-    cumulative_dice(axes[3], cnn_tags, data=dcs_with_lc, title='Cumulative frequency of dice')
-    bp1 = hgrid(axes[3], top=top, bottom=0, major_gap=100, minor_gap=20, axis='y')
+    cumulative_dice(axes[3], cnn_tags, data=dcs_with_lc, title='Cumulative frequency percentage of dice')
+    bp1 = hgrid(axes[3], top=101, bottom=0, major_gap=20, minor_gap=20, axis='y')
     # bp2 = hgrid(axes[1, 3], top=top, bottom=0, major_gap=100, minor_gap=20, axis='y')
     # =============================================
     # read xls files and fill vectors
     bottom_dis, top_dis = read_xls(xls_path, results, parent_pth, fields=['bottom_prep_dis', 'top_prep_dis_lc'])
+    bottom_dis = [td * 3 for td in bottom_dis]
+    top_dis = [td * 3 for td in top_dis]
     bplot2 = plot_bp(axes[4], 'Top distance', top_dis)
     fill_pb_color(([bplot2]), colors, axes[4])
-    hgrid(axes[4], top=15, bottom=-15, major_gap=10, minor_gap=2, axis='y')
+    hgrid(axes[4], top=31, bottom=-60, major_gap=10, minor_gap=5, axis='y')
     axes[4].get_xaxis().set_ticks([])
     bplot2 = plot_bp(axes[5], 'Bottom distance', bottom_dis)
     fill_pb_color(([bplot2]), colors, axes[5])
-    hgrid(axes[5], top=20, bottom=-20, major_gap=10, minor_gap=2, axis='y')
+    hgrid(axes[5], top=61, bottom=-30, major_gap=10, minor_gap=5, axis='y')
     axes[5].get_xaxis().set_ticks([])
     axes[5].legend(
         [bplot2["boxes"][0], bplot2["boxes"][1], bplot2["boxes"][2], bplot2["boxes"][3], bplot2["boxes"][4],
