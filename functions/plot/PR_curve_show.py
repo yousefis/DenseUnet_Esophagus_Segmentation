@@ -6,7 +6,7 @@ from os import listdir
 from os.path import isfile, join
 
 font = {'family' : 'normal',
-        'size'   : 20}
+        'size'   : 30}
 plt.rc('font', **font)
 
 def read_names( tag,test_path):
@@ -21,8 +21,10 @@ def calculate_precision_recall(xls_files):
     f=True
 
     for x in xls_files:
+
         try:
             df = pd.read_excel( x)
+
             if f:
                 f = False
                 TP = df['TP']
@@ -41,14 +43,15 @@ def calculate_precision_recall(xls_files):
     recall =  TP/(TP+FN)
     print((np.sum(precision)+1)/ (np.size(precision)+1))
     return recall,precision
-
+# test_vali='result_vali/'
+test_vali='result/'
 test_path= [
-            '/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/Log_2019_09_23/Dataset3/33533_0.75_4-train1-07142020_020/result_vali/',#dice+attention spatial  no distancemap
-'/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/Log_2019_09_23/Dataset3/33533_0.75_4-train1-05082020_090/result_vali/',#dice+Nodistancemap
-            '/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/Log_2019_09_23/Dataset3/33533_0.75_4-train1-07052020_000/result_vali/',#dice+attention channel no distancemap
-'/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/Log_2019_09_23/Dataset3/33533_0.75_4-train1-07102020_140/result_vali/', #dice+attention channel+spatial  no distancemap
-            '/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/Log_2019_09_23/Dataset3/33533_0.75_4-train1-08052020_140/result_vali/',#dice normal net
-'/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/Log_2019_09_23/Dataset3/33533_0.75_4-train1-04172020_140/result_vali/', #DUNET
+            '/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/Log_2019_09_23/Dataset3/33533_0.75_4-train1-07142020_020/'+test_vali,#dice+attention spatial  no distancemap
+'/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/Log_2019_09_23/Dataset3/33533_0.75_4-train1-05082020_090/'+test_vali,#dice+Nodistancemap
+            '/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/Log_2019_09_23/Dataset3/33533_0.75_4-train1-07052020_000/'+test_vali,#dice+attention channel no distancemap
+'/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/Log_2019_09_23/Dataset3/33533_0.75_4-train1-07102020_140/'+test_vali, #dice+attention channel+spatial  no distancemap
+            '/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/Log_2019_09_23/Dataset3/33533_0.75_4-train1-08052020_140/'+test_vali,#dice normal net
+'/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/Log_2019_09_23/Dataset3/33533_0.75_4-train1-04172020_140/'+test_vali, #DUNET
             ]
 # test_path= ['33533_0.75_4-train1-05082020_090/',  #dice+Nodistancemap
 #               # '33533_0.75_4-train1-07032020_170/', #dice+distancemap+attebtion channel
@@ -65,11 +68,17 @@ test_path= [
 
 
 cnn_tags=['DUnet',
+          'DDUnet no SA & SkipA',
+          'DDUnet no SkipA',
+          'DDUnet no  SA & SkipA plus CA',
+          'DDUnet no SkipA plus CA',
           'DDUnet',
-          'DD(SA)Unet',
-          'DD(CA)Unet',
-          'DD(SCA)Unet',
-          'DD(SA)Unet(SkipA)',
+    # 'DUnet',
+    #       'DDUnet',
+    #       'DD(SA)Unet',
+    #       'DD(CA)Unet',
+    #       'DD(SCA)Unet',
+    #       'DD(SA)Unet(SkipA)',
           # 'FocalLoss',
           ]
 
@@ -153,6 +162,6 @@ plt.xlim([0,1])
 plt.ylim([0,1])
 plt.xlabel('1-Recall')
 plt.ylabel('Precision')
-plt.title('ROC')
+plt.title('Test')
 plt.show()
 print(3)
