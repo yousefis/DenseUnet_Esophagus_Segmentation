@@ -1,5 +1,11 @@
 # If this repository helps you in anyway, show your love :heart: by putting a :star: on this project 
 
+# Proposed CNN
+<p>
+    <img src="net.png" alt>
+    <em>Figure 1- Proposed network.</em>
+</p>
+
 # Citation
 
 
@@ -20,9 +26,3 @@
 # Requirments
 
 Tensorflow<2 & python>3.4
-
-
-<p>
-    <img src="net.png" alt>
-    <em>Figure 1- Proposed network.</em>
-</p>
