@@ -15,7 +15,11 @@ values are show in yellow. The manual delineation and the network results are sh
 </p>
 
 # Citation
-
+    @inproceedings{yousefi2020esophageal,
+      title={Esophageal Tumor Segmentation in CTImages using a 3D Convolutional Neural Network},
+      author={Yousefi, Sahar and Sokooti, Hessam and Elmahdy, Mohamed S and Peters, Femke P and Shalmani, Mohammad T Manzuri and Zinkstok, Roel T and Staring, Marius},  
+      booktitle={arXiv},
+    }
 
 
     @inproceedings{yousefi2018esophageal,
@@ -26,13 +30,8 @@ values are show in yellow. The manual delineation and the network results are sh
       year={2018},  
       organization={Springer}
     }
-    
-    
-    @inproceedings{yousefi2020esophageal,
-      title={Esophageal Tumor Segmentation in CTImages using a 3D Convolutional Neural Network},
-      author={Yousefi, Sahar and Sokooti, Hessam and Elmahdy, Mohamed S and Peters, Femke P and Shalmani, Mohammad T Manzuri and Zinkstok, Roel T and Staring, Marius},  
-      booktitle={arXiv},
-    }
+       
+   
 # Requirments
 
 Tensorflow<2 & python>3.4
