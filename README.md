@@ -16,3 +16,9 @@
 # Requirments
 
 Tensorflow<2 & python>3.4
+
+
+<p>
+    <img src="net.png" alt>
+    <em>Figure 1- Proposed network.</em>
+</p>
