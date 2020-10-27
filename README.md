@@ -10,7 +10,7 @@
 # Results
 <p>
     <img src="sample1.png" alt>
-    <em>Figure 2- Qualitative comparison of DDAUnet with the other CNNs for three slices from three distinct patients. 2D DSC
+    <em>Figure 2- Qualitative comparison of DDAUnet with the other CNNs for two slices from two distinct patients. 2D DSC
 values are show in yellow. The manual delineation and the network results are shown by green and red contours, respectively.</em>
 </p>
 
