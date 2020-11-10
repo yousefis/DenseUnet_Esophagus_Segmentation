@@ -284,28 +284,52 @@ class _read_data:
         train_CTs, train_GTVs, train_Torso, train_penalize,train_surface = self.read_train_data(
             np.hstack((data_dir[train_indx1], data_dir[train_indx2], data_dir2[train_indx3])),image_path = self.resampled_path)
         validation_CTs, validation_GTVs, validation_Torso, validation_penalize,validation_surface = self.read_train_data(
-            np.hstack((data_dir[valid_indx1], data_dir[valid_indx2], data_dir2[train_indx3])),image_path = self.resampled_path)
+            np.hstack((data_dir[valid_indx1], data_dir[valid_indx2], data_dir2[valid_indx3])),image_path = self.resampled_path)
         test_CTs, test_GTVs, test_Torso, test_penalize ,test_surface= self.read_train_data(
-            np.hstack((data_dir[test_indx1], data_dir[test_indx2], data_dir2[train_indx3])),image_path = self.resampled_path)
+            np.hstack((data_dir[test_indx1], data_dir[test_indx2], data_dir2[test_indx3])),image_path = self.resampled_path)
+
+        # print(
+        #     'train\ndataset#1- patients: %d scans: %d,\n'
+        #     'dataset#2- patients: %d scans: %d,\n' %
+        #     (len(train_indx1), len(self.read_train_data(data_dir[train_indx1],image_path = self.resampled_path)[0]),
+        #      len(np.hstack((train_indx2, train_indx3))),
+        #      len(self.read_train_data(np.hstack((data_dir[train_indx2] , data_dir2[train_indx3])),image_path = self.resampled_path)[0])))
+        #
+        # print(
+        #     'validation\ndataset#1- patients: %d scans: %d,\n'
+        #     'dataset#2- patients: %d scans: %d,\n' %
+        #     (len(valid_indx1), len(self.read_train_data(data_dir[valid_indx1], image_path=self.resampled_path)[0]),
+        #      len(np.hstack((valid_indx2, valid_indx3))),
+        #      len(self.read_train_data(np.hstack((data_dir[valid_indx2], data_dir2[valid_indx3])),
+        #                               image_path=self.resampled_path)[0])))
+        #
+        # print(
+        #     'test\ndataset#1- patients: %d scans: %d, \n'
+        #     'dataset#2- patients: %d scans: %d,\n' %
+        #     (len(test_indx1), len(self.read_train_data(data_dir[test_indx1], image_path=self.resampled_path)[0]),
+        #      len(np.hstack((test_indx2, test_indx3))),
+        #      len(self.read_train_data(np.hstack((data_dir[test_indx2], data_dir2[test_indx3])),
+        #                               image_path=self.resampled_path)[0])))
 
 
 
         print(
-            'train: %d dataset#1, %d dataset#2 , %d dataset#3 \nvalidation: %d dataset#1, %d dataset#2 ,%d dataset#3 \ntest: %d dataset#1, %d dataset#2, %d dataset#3  \ntotal: %d' %
+            'train: %d dataset#1, %d dataset#2 \nvalidation: %d dataset#1, %d dataset#2  \ntest: %d dataset#1, %d dataset#2  \ntotal: %d' %
             (len(data_dir[train_indx1]),
-             len(data_dir[train_indx2]),
+             len(data_dir[train_indx2])+
              len(data_dir2[train_indx3]),
              len(data_dir[valid_indx1]),
-             len(data_dir[valid_indx2]),
+             len(data_dir[valid_indx2])+
              len(data_dir2[valid_indx3]),
              len(data_dir[test_indx1]),
-             len(data_dir[test_indx2]),
+             len(data_dir[test_indx2])+
              len(data_dir2[test_indx3]),
              len(data_dir[train_indx1]) + len(data_dir[train_indx2]) +  len(data_dir2[train_indx3]) +
              len(data_dir[valid_indx1]) + len(data_dir[valid_indx2]) +len(data_dir2[valid_indx3]) +
              len(data_dir[test_indx1]) + len(data_dir[test_indx2])+ len(data_dir2[test_indx3])
              ))
-        # already read all the path, now select train, validation and test!
+
+
 
 
 
