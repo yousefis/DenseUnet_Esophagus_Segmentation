@@ -773,7 +773,7 @@ if __name__ == "__main__":
 
     # for i in range(6,7):
     #     fold = -i
-    fold=1
+    fold=0
     i=0
 
     # for j in range(0,2):
