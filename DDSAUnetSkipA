@@ -20,6 +20,7 @@ if __name__=='__main__':
     now = datetime.now() # current date and time
     date_time = now.strftime("%m%d%Y_%H%M%S") #make a name for logging dir
 
+
     dc12=dense_seg(data=2,
                    densnet_unet_config=[3,3,5,3,3],
                    compression_coefficient=.75,
@@ -31,8 +32,7 @@ if __name__=='__main__':
                    test_tag='',
                    img_name='',label_name='', torso_tag='',
                    log_tag='-train1-'+date_time+str(fold),
-                   tumor_percent=.75,
-                   other_percent=.25,
+                   tumor_percent=0.75, # percentage of patches including the tumors
                    Logs=Logs,
                    fold=fold,
                    server_path=server_path,
