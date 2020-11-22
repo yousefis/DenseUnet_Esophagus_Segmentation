@@ -19,7 +19,7 @@ class dense_seg:
     def __init__(self,data,densnet_unet_config ,compression_coefficient ,growth_rate ,
                  sample_no,validation_samples,no_sample_per_each_itr,
                  train_tag, validation_tag, test_tag,img_name,label_name,torso_tag,log_tag,
-                 tumor_percent,other_percent,Logs,fold,server_path):
+                 tumor_percent,Logs,fold,server_path):
         settings.init()
 
         # densenet_unet parameters
@@ -66,7 +66,6 @@ class dense_seg:
         self.x_hist=0
 
         self.tumor_percent = tumor_percent
-        self.other_percent = other_percent
         self.fold=fold
 
     def copytree(self,src, dst, symlinks=False, ignore=None):
@@ -107,7 +106,6 @@ class dense_seg:
                                                              sample_no=sample_no, patch_window=self.patch_window,
                                                              GTV_patchs_size=self.GTV_patchs_size,
                                                              tumor_percent=self.tumor_percent,
-                                                             other_percent=self.other_percent,
                                                              img_no=bunch_of_images_no,
                                                              mutex=settings.mutex,is_training=0,vl_sample_no=self.validation_samples
                                                              )
@@ -124,7 +122,6 @@ class dense_seg:
                                       img_width=self.img_width, img_height=self.img_height,
                                       mutex=settings.mutex,
                                       tumor_percent=self.tumor_percent,
-                                      other_percent=self.other_percent,
                                       is_training=0,
                                       patch_extractor=_patch_extractor_thread_vl,
                                       fold=self.fold)
@@ -146,7 +143,6 @@ class dense_seg:
                                                          sample_no=sample_no, patch_window=self.patch_window,
                                                          GTV_patchs_size=self.GTV_patchs_size,
                                                          tumor_percent=self.tumor_percent,
-                                                         other_percent=self.other_percent,
                                                          img_no=bunch_of_images_no,
                                                          mutex=settings.mutex,is_training=1)
         _fill_thread = fill_thread(train_CTs, train_GTVs, train_Torso,train_penalize,train_surface,
@@ -157,7 +153,7 @@ class dense_seg:
                                    img_width=self.img_width,
                                    img_height=self.img_height,mutex=settings.mutex,
                                    tumor_percent=self.tumor_percent,
-                                   other_percent=self.other_percent,is_training=1,
+                                   is_training=1,
                                    patch_extractor=patch_extractor_thread,
                                    fold=self.fold)
 
