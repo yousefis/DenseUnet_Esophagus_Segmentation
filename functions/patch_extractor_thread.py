@@ -3,7 +3,7 @@ import functions.settings as settings
 class _patch_extractor_thread(threading.Thread):
     def __init__ (self, _image_class,
                   sample_no,patch_window,GTV_patchs_size,
-                  tumor_percent,other_percent,img_no,mutex,is_training,vl_sample_no=0):
+                  tumor_percent,img_no,mutex,is_training,vl_sample_no=0):
         threading.Thread.__init__(self)
 
         self.paused = False
@@ -17,7 +17,6 @@ class _patch_extractor_thread(threading.Thread):
         else:
             self._image_class_vl=_image_class
         self.tumor_percent=tumor_percent
-        self.other_percent=other_percent
         self.img_no=img_no
         self.is_training=is_training
         self.validation_sample_no=vl_sample_no
@@ -41,7 +40,6 @@ class _patch_extractor_thread(threading.Thread):
                                                                           self.patch_window,
                                                                           self.GTV_patchs_size,
                                                                           self.tumor_percent,
-                                                                          self.other_percent,
                                                                           self.img_no
                                                                           )
                     else:
@@ -51,7 +49,6 @@ class _patch_extractor_thread(threading.Thread):
                                                                               self.patch_window,
                                                                               self.GTV_patchs_size,
                                                                               self.tumor_percent,
-                                                                              self.other_percent,
                                                                           14)
                         # else:
                         #     self.finish_thread()
