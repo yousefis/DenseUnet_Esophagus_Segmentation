@@ -564,7 +564,7 @@ class image_class:
             # read patches from the images which are in the RAM
 
     def read_patche_online_from_image_bunch_vl(self, sample_no_per_bunch, patch_window, GTV_patchs_size, tumor_percent,
-                                            other_percent, img_no):
+                                            img_no):
         if settings.vl_isread == True:
             return
 
@@ -604,7 +604,7 @@ class image_class:
             '''random numbers for selecting random samples'''
             random_torso = np.random.randint(1, len(torso_range[0]),
                                              size=int(
-                                                 patch_no_per_image * other_percent))  # get half depth samples from torso
+                                                 patch_no_per_image * (1-tumor_percent)))  # get half depth samples from torso
 
             rand_depth = torso_range[0][random_torso]
             rand_width = torso_range[1][random_torso]
@@ -801,7 +801,7 @@ class image_class:
 
     #--------------------------------------------------------------------------------------------------------
     #read patches from the images which are in the RAM
-    def read_patche_online_from_image_bunch(self, sample_no_per_bunch,patch_window,GTV_patchs_size,tumor_percent,other_percent,img_no):
+    def read_patche_online_from_image_bunch(self, sample_no_per_bunch,patch_window,GTV_patchs_size,tumor_percent,img_no):
 
         if len(self.collection)<img_no:
             return
@@ -843,7 +843,7 @@ class image_class:
 
             '''random numbers for selecting random samples'''
             random_torso=np.random.randint(1,len(torso_range[0]) ,
-                                           size=int(patch_no_per_image *other_percent))  # get half depth samples from torso
+                                           size=int(patch_no_per_image *(1-tumor_percent)))  # get half depth samples from torso
 
             rand_depth =torso_range[0][random_torso]
             rand_width =torso_range[1][random_torso]
@@ -1035,7 +1035,7 @@ class image_class:
             print('smth wrong')
 
     #--------------------------------------------------------------------------------------------------------
-    def read_patche_online_from_image_bunch_with_trackno(self, sample_no_per_bunch,patch_window,GTV_patchs_size,tumor_percent,other_percent,img_no):
+    def read_patche_online_from_image_bunch_with_trackno(self, sample_no_per_bunch,patch_window,GTV_patchs_size,tumor_percent,img_no):
 
         if len(self.collection)<img_no:
             return
@@ -1077,7 +1077,7 @@ class image_class:
 
             '''random numbers for selecting random samples'''
             random_torso=np.random.randint(1,len(torso_range[0]) ,
-                                           size=int(patch_no_per_image *other_percent))  # get half depth samples from torso
+                                           size=int(patch_no_per_image *(1-tumor_percent)))  # get half depth samples from torso
 
             rand_depth =torso_range[0][random_torso]
             rand_width =torso_range[1][random_torso]
