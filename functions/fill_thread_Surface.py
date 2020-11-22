@@ -4,7 +4,7 @@ import functions.settings as settings
 class fill_thread(threading.Thread):
     def __init__ (self, CTs, GTVs,train_Torso,Penalize,Surface,_image_class,
                   sample_no,total_sample_no,patch_window,GTV_patchs_size,
-                  img_width,img_height,mutex,tumor_percent,other_percent,is_training,patch_extractor,fold):
+                  img_width,img_height,mutex,tumor_percent,is_training,patch_extractor,fold):
         """
             Thread for moving images to RAM.
 
@@ -40,7 +40,6 @@ class fill_thread(threading.Thread):
         self.img_height=img_height
         self.mutex=mutex
         self.tumor_percent=tumor_percent
-        self.other_percent=other_percent
         self.is_training=is_training
         self.total_sample_no=total_sample_no
         self.patch_extractor=patch_extractor
