@@ -5,8 +5,6 @@ import psutil
 import logging
 import numpy as np
 import tensorflow as tf
-import SimpleITK as sitk
-from shutil import copyfile
 import functions.settings as settings
 from functions.loss_func import _loss_func
 from functions.read_thread_surface import read_thread
