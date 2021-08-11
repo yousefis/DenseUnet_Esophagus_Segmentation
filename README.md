@@ -17,11 +17,12 @@ values are show in yellow. The manual delineation and the network results are sh
 </p>
 
 # Citation
-    @article{yousefi2020esophageal,
-    title={Esophageal Tumor Segmentation in CT Images using a 3D Convolutional Neural Network},
-    author={Yousefi, Sahar and Sokooti, Hessam and Elmahdy, Mohamed S and Lips, Irene M and Shalmani, Mohammad T Manzuri and Zinkstok, Roel T and Dankers, Frank JWM and Staring, Marius},
-    journal={arXiv preprint arXiv:2012.03242},
-    year={2020}
+    @article{yousefi2021esophageal,
+      title={Esophageal Tumor Segmentation in CT Images using a Dilated Dense Attention Unet (DDAUnet)},
+      author={Yousefi, Sahar and Sokooti, Hessam and Elmahdy, Mohamed S and Lips, Irene M and Shalmani, Mohammad T Manzuri and Zinkstok, Roel T and Dankers, Frank JWM and Staring, Marius},
+      journal={IEEE Access},
+      year={2021},
+      publisher={IEEE}
     }
 
 
