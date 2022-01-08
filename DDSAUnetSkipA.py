@@ -37,7 +37,7 @@ def parse_inputs():
 
 if __name__=='__main__':
     np.random.seed(1)
-    # tf.set_random_seed(1)
+    tf.set_random_seed(1)
     args = parse_inputs()
     server_path = args.server_path
     Logs = args.log
