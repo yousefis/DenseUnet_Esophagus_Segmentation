@@ -3,7 +3,7 @@ joblib==0.14.1
 scipy==1.5.4
 pandas==1.1.5
 matplotlib==3.3.4
-numpy==1.13.3
+numpy==1.21.0
 tensorflow==1.15.0
 xmltodict==0.12.0
 psutil==5.9.0
