@@ -38,5 +38,5 @@ values are show in yellow. The manual delineation and the network results are sh
    
 # Requirments
 ```
-    pip install -r ./requirements.txt
+pip install -r ./requirements.txt
 ```
