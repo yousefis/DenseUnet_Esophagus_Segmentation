@@ -38,5 +38,4 @@ values are show in yellow. The manual delineation and the network results are sh
    
 # Requirments
 
-Tensorflow<2 & python>3.4
-
+pip install -r ./requirements.txt

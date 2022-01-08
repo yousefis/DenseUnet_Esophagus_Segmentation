@@ -19,7 +19,10 @@ class dense_seg:
     def __init__(self,data,densnet_unet_config ,compression_coefficient ,growth_rate ,
                  sample_no,validation_samples,no_sample_per_each_itr,
                  train_tag, validation_tag, test_tag,img_name,label_name,torso_tag,log_tag,
-                 tumor_percent,Logs,fold,server_path):
+                 tumor_percent,Logs,fold,server_path, learning_decay, learning_rate, beta_rate,
+                 img_padded_size, seg_size, GTV_patchs_size, patch_window,batch_no,
+                 batch_no_validation, display_step, display_validation_step, total_epochs,dropout_keep,
+                 img_size):
         settings.init()
 
         # densenet_unet parameters
@@ -34,26 +37,26 @@ class dense_seg:
         self.label_name=label_name
         self.torso_tag=torso_tag
         self.data=data
-        self.learning_decay = .95
-        self.learning_rate = 1E-5
-        self.beta_rate = 0.05
+        self.learning_decay = learning_decay
+        self.learning_rate = learning_rate
+        self.beta_rate = beta_rate
 
-        self.img_padded_size = 519
-        self.seg_size = 505
+        self.img_padded_size = img_padded_size
+        self.seg_size = seg_size
 
-        self.GTV_patchs_size =49 #output patch
-        self.patch_window = 63 #input patch
+        self.GTV_patchs_size = GTV_patchs_size  #output patch
+        self.patch_window = patch_window #input patch
         self.sample_no = sample_no
-        self.batch_no = 7
-        self.batch_no_validation = 30
+        self.batch_no = batch_no
+        self.batch_no_validation = batch_no_validation
         self.validation_samples = validation_samples
-        self.display_step = 100
-        self.display_validation_step = 1
-        self.total_epochs = 10
+        self.display_step = display_step
+        self.display_validation_step = display_validation_step
+        self.total_epochs = total_epochs
         self.loss_instance=_loss_func() #an instance from the class of loss functions
         self.server_path= server_path
 
-        self.dropout_keep = .5
+        self.dropout_keep = dropout_keep
         self.no_sample_per_each_itr=no_sample_per_each_itr
 
         self.log_ext = ''.join(map(str, self.densnet_unet_config))+'_'+str(self.compression_coefficient)+'_'+str(self.growth_rate)+log_tag
@@ -64,6 +67,8 @@ class dense_seg:
         self.chckpnt_dir = server_path+Logs + self.log_ext + '/densenet_unet_checkpoints/'
         self.out_path = server_path+'/Outputs/' + self.log_ext + '/'
         self.x_hist=0
+        self.img_width = img_size
+        self.img_height = img_size
 
         self.tumor_percent = tumor_percent
         self.fold=fold
@@ -93,17 +98,16 @@ class dense_seg:
         train_CTs, train_GTVs, train_Torso, train_penalize, train_surface,\
         validation_CTs, validation_GTVs, validation_Torso, validation_penalize, validation_surface,\
         test_CTs, test_GTVs, test_Torso, test_penalize,test_surface=_rd.read_data_path(fold=self.fold)
-        self.img_width = 500
-        self.img_height = 500
+        self.img_width = self.img_width
+        self.img_height = self.img_height
         # ======================================
         #validation instances
         bunch_of_images_no=20
-        sample_no=500
         _image_class_vl = image_class(validation_CTs, validation_GTVs, validation_Torso,validation_penalize,validation_surface
                                       , bunch_of_images_no=bunch_of_images_no,  is_training=0,
                                       patch_window=self.patch_window)
         _patch_extractor_thread_vl = _patch_extractor_thread(_image_class=_image_class_vl,
-                                                             sample_no=sample_no, patch_window=self.patch_window,
+                                                             sample_no=self.sample_no, patch_window=self.patch_window,
                                                              GTV_patchs_size=self.GTV_patchs_size,
                                                              tumor_percent=self.tumor_percent,
                                                              img_no=bunch_of_images_no,
@@ -135,12 +139,11 @@ class dense_seg:
         # ======================================
         #training instances
         bunch_of_images_no = 24
-        sample_no=240
         _image_class = image_class(train_CTs, train_GTVs, train_Torso,train_penalize,train_surface
                                    , bunch_of_images_no=bunch_of_images_no,is_training=1,patch_window=self.patch_window
                                    )
         patch_extractor_thread = _patch_extractor_thread(_image_class=_image_class,
-                                                         sample_no=sample_no, patch_window=self.patch_window,
+                                                         sample_no=240, patch_window=self.patch_window,
                                                          GTV_patchs_size=self.GTV_patchs_size,
                                                          tumor_percent=self.tumor_percent,
                                                          img_no=bunch_of_images_no,
