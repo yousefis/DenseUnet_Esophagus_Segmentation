@@ -32,6 +32,8 @@ def parse_inputs():
     parser.add_argument("--total_epochs", type=int, required=False, default=10, help="Epoch no")
     parser.add_argument("--dropout_keep", type=float, required=False, default=.5, help="Dropout keep")
     parser.add_argument("--img_size", type=int, required=False, default=.5, help="Image size")
+    parser.add_argument("--data_type", type=int, required=False, default=2, help="The value is 1 if the data only includes 3D scans and 2 if the data includes 4D scans")
+    parser.add_argument("--densnet_unet_config", nargs="+", default=[3,3,5,3,3], help="The config of the network, make sure it doesn't return zero no of layers after downsampling")
     args = parser.parse_args()
     return args
 
@@ -51,16 +53,12 @@ if __name__=='__main__':
     now = datetime.now() # current date and time
     date_time = now.strftime("%m%d%Y_%H%M%S") #make a name for logging dir
 
-    dc12 = dense_seg(data=2,
-                    densnet_unet_config = [3,3,5,3,3],
+    dc12 = dense_seg(data=args.data_type,
+                    densnet_unet_config = args.densnet_unet_config,
                     compression_coefficient = args.compression_coefficient,
                     sample_no=args.sample_no,
                     validation_samples=args.validation_samples,
                     no_sample_per_each_itr=args.no_sample_per_each_itr,
-                    train_tag='',
-                    validation_tag='',
-                    test_tag='',
-                    img_name='',label_name='', torso_tag='',
                     log_tag='-train1-'+date_time+str(fold),
                     tumor_percent=args.tumor_percent,
                     Logs=Logs,

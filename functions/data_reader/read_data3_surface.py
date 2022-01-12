@@ -10,11 +10,13 @@ import matplotlib.pyplot as plt
 
 
 class _read_data:
-    def __init__(self, data, train_tag='prostate_train/', validation_tag='prostate_validation/',
-                 test_tag='prostate_test/',
-                 img_name='.mha', label_name='Bladder.mha', torso_tag='Torso.mha'):
+    def __init__(self, data,
+                 train_tag='',
+                 validation_tag='',
+                 test_tag='',
+                 img_name='.mha', label_name='Bladder.mha',
+                 path = '/srv/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Data-01/'):
 
-        path = '/srv/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Data-01/'
         self.train_image_path = path + train_tag
         self.validation_image_path = path + validation_tag
         self.test_image_path = path + test_tag

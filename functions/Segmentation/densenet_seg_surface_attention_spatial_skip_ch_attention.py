@@ -18,7 +18,7 @@ from functions.networks.dense_unet2_attention_spatial_skip_ch_attention import _
 class dense_seg:
     def __init__(self,data,densnet_unet_config ,compression_coefficient ,growth_rate ,
                  sample_no,validation_samples,no_sample_per_each_itr,
-                 train_tag, validation_tag, test_tag,img_name,label_name,torso_tag,log_tag,
+                 train_tag, validation_tag, test_tag,torso_tag,log_tag,
                  tumor_percent,Logs,fold,server_path, learning_decay, learning_rate, beta_rate,
                  img_padded_size, seg_size, GTV_patchs_size, patch_window,batch_no,
                  batch_no_validation, display_step, display_validation_step, total_epochs,dropout_keep,
@@ -33,8 +33,6 @@ class dense_seg:
         self.train_tag=train_tag
         self.validation_tag=validation_tag
         self.test_tag=test_tag
-        self.img_name=img_name
-        self.label_name=label_name
         self.torso_tag=torso_tag
         self.data=data
         self.learning_decay = learning_decay
@@ -89,8 +87,7 @@ class dense_seg:
         read the list of data & start patch reading threads & start training the network
         :return:
         """
-        _rd = _read_data(data=self.data,train_tag=self.train_tag, validation_tag=self.validation_tag, test_tag=self.test_tag,
-                         img_name=self.img_name, label_name=self.label_name,torso_tag=self.torso_tag)
+        _rd = _read_data(data=self.data)
 
         self.alpha_coeff=1
 
