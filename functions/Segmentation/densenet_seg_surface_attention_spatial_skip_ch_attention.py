@@ -13,7 +13,7 @@ from functions.image_class_penalize_surface import image_class
 from functions.data_reader.read_data3_surface import _read_data
 from functions.patch_extractor_thread import _patch_extractor_thread
 from functions.networks.dense_unet2_attention_spatial_skip_ch_attention import _densenet_unet
-
+from tensorflow.python.client import device_lib
 # --------------------------------------------------------------------------------------------------------
 class dense_seg:
     def __init__(self,data,densnet_unet_config ,compression_coefficient ,growth_rate ,
@@ -205,7 +205,7 @@ class dense_seg:
         sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
         devices = sess.list_devices()
         print(devices)
-        from tensorflow.python.client import device_lib
+
         print(device_lib.list_local_devices())
         print('*****************************************')
         print('*****************************************')
