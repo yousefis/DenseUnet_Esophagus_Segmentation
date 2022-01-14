@@ -116,7 +116,7 @@ class dense_seg:
                                       validation_penalize,
                                       validation_surface,
                                       _image_class_vl,
-                                      sample_no=sample_no,
+                                      sample_no=self.sample_no,
                                       total_sample_no=self.validation_samples,
                                       patch_window=self.patch_window,
                                       GTV_patchs_size=self.GTV_patchs_size,
@@ -147,7 +147,7 @@ class dense_seg:
                                                          mutex=settings.mutex,is_training=1)
         _fill_thread = fill_thread(train_CTs, train_GTVs, train_Torso,train_penalize,train_surface,
                                    _image_class,
-                                   sample_no=sample_no,total_sample_no=self.sample_no,
+                                   sample_no=self.sample_no,total_sample_no=self.sample_no,
                                    patch_window=self.patch_window,
                                    GTV_patchs_size=self.GTV_patchs_size,
                                    img_width=self.img_width,
