@@ -28,24 +28,18 @@ class _read_data:
         self.img_name = img_name
         self.label_name = label_name
         self.data = data
-        # self.torso_tag=torso_tag
         self.patchsize = 87
         self.resample_tag = '_re113_pad87'
-        # self.img_name = 'CT' + self.resample_tag + 'z' + '_pad' + str(self.patchsize) + '.mha'  # I added z because it is already masked by torso! out of torso is equal to -1024!
         self.img_name = 'CT' + self.resample_tag +  '.mha'
-        # self.label_name1 = 'GTV_CT' + self.resample_tag + '_pad' + str(self.patchsize) + '.mha'
         self.label_name1 = 'GTV_CT' + self.resample_tag + '.mha'
-        # self.label_name2 = 'GTV' + self.resample_tag + '_pad' + str(self.patchsize) + '.mha'
         self.label_name2 = 'GTV' + self.resample_tag +  '.mha'
         self.ttag = '_Torso'
-        # self.torso_tag = 'CT' + self.ttag + self.resample_tag + '_pad' + str(self.patchsize) + '.mha'
         self.torso_tag = 'CT' + self.ttag + self.resample_tag +  '.mha'
         self.penalize_tag = 'distancemap_'
         self.startwith_4DCT = '4DCT_'
         self.startwith_GTV = 'GTV_'
         self.resampled_path = '/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Data-01/21data1100data2-v3/'
         self.resampled_path2 = '/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Data-01/21data1100data2-v4/'
-        # self.resampled_path = resampled_path#'/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Data-01/21data1100data2-v3/'
         self.seed=1
 
     # ========================
