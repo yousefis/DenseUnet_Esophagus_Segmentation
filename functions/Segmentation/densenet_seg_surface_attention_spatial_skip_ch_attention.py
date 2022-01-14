@@ -82,11 +82,14 @@ class dense_seg:
     def save_file(self,file_name,txt):
         with open(file_name, 'a') as file:
             file.write(txt)
-    def run_net(self):
+    def run_net(self,
+                pre_trained_chckpnt_dir ='' #for resuming training, load the model from this directory
+     ):
         """
         read the list of data & start patch reading threads & start training the network
         :return:
         """
+
         _rd = _read_data(data=self.data)
 
         self.alpha_coeff=1
@@ -216,7 +219,7 @@ class dense_seg:
 
         extra_update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
         saver=tf.train.Saver(tf.global_variables(), max_to_keep=1000)
-        loadModel = 0 #resume training or start training?
+
 
 
         #define the loss function
@@ -278,10 +281,8 @@ class dense_seg:
 
         point = 0 # starting point, starts from a value > 0 if training is resumed
         itr1 = 0 # number of iterations
-        if loadModel:
-            chckpnt_dir='/exports/lkeb-hpc/syousefi/2-lkeb-17-dl01/syousefi/TestCode/EsophagusProject/Code/Log_2019_09_23/Dataset3/33533_0.75_4-train1-08202020_2324140/densenet_unet_checkpoints/'
-            ckpt = tf.train.get_checkpoint_state(chckpnt_dir)
-            # with tf.Session() as sess:
+        if len(pre_trained_chckpnt_dir):
+            ckpt = tf.train.get_checkpoint_state(pre_trained_chckpnt_dir)
             saver.restore(sess, ckpt.model_checkpoint_path)
             point=int(ckpt.model_checkpoint_path.split('/')[-1].split('-')[-1])
             itr1=point
