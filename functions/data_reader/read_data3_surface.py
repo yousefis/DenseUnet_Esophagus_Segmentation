@@ -284,31 +284,6 @@ class _read_data:
         test_CTs, test_GTVs, test_Torso, test_penalize ,test_surface= self.read_train_data(
             np.hstack((data_dir[test_indx1], data_dir[test_indx2], data_dir2[test_indx3])),image_path = self.resampled_path)
 
-        # print(
-        #     'train\ndataset#1- patients: %d scans: %d,\n'
-        #     'dataset#2- patients: %d scans: %d,\n' %
-        #     (len(train_indx1), len(self.read_train_data(data_dir[train_indx1],image_path = self.resampled_path)[0]),
-        #      len(np.hstack((train_indx2, train_indx3))),
-        #      len(self.read_train_data(np.hstack((data_dir[train_indx2] , data_dir2[train_indx3])),image_path = self.resampled_path)[0])))
-        #
-        # print(
-        #     'validation\ndataset#1- patients: %d scans: %d,\n'
-        #     'dataset#2- patients: %d scans: %d,\n' %
-        #     (len(valid_indx1), len(self.read_train_data(data_dir[valid_indx1], image_path=self.resampled_path)[0]),
-        #      len(np.hstack((valid_indx2, valid_indx3))),
-        #      len(self.read_train_data(np.hstack((data_dir[valid_indx2], data_dir2[valid_indx3])),
-        #                               image_path=self.resampled_path)[0])))
-        #
-        # print(
-        #     'test\ndataset#1- patients: %d scans: %d, \n'
-        #     'dataset#2- patients: %d scans: %d,\n' %
-        #     (len(test_indx1), len(self.read_train_data(data_dir[test_indx1], image_path=self.resampled_path)[0]),
-        #      len(np.hstack((test_indx2, test_indx3))),
-        #      len(self.read_train_data(np.hstack((data_dir[test_indx2], data_dir2[test_indx3])),
-        #                               image_path=self.resampled_path)[0])))
-
-
-
         print(
             'train: %d dataset#1, %d dataset#2 \nvalidation: %d dataset#1, %d dataset#2  \ntest: %d dataset#1, %d dataset#2  \ntotal: %d' %
             (len(data_dir[train_indx1]),
@@ -365,8 +340,7 @@ class _read_data:
                 Torso_path = [join(image_path, pd, dt, f) for f in listdir(join(image_path, pd, dt)) if
                               f.endswith(torso_tag)]
 
-                # print('%s\n%s\n%s' % (
-                # CT_path[len(GTV_path) - 1], GTV_path[len(GTV_path) - 1], Torso_path[len(GTV_path) - 1]))
+
 
                 CT4D_path = [(join(image_path, pd, dt, f)) for f in listdir(join(image_path, pd, dt)) if
                              f.startswith(startwith_4DCT) & f.endswith('%' + self.resample_tag + 'z.mha')]
