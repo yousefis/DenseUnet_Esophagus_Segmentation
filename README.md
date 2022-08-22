@@ -39,3 +39,9 @@ values are show in yellow. The manual delineation and the network results are sh
 ```
 pip install -r ./requirements.txt
 ```
+
+
+# run code
+```
+python3 DDSAUnetSkipA.py --server_path <path_to_project_from_home> --log <path_to_log_dir>
+```
